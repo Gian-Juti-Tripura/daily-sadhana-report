@@ -27,13 +27,13 @@ const RoyalVedicFlourish: React.FC<{ flip?: boolean; className?: string }> = ({
     viewBox="0 0 140 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    className={`h-3.5 sm:h-4 md:h-4.5 w-auto shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] ${flip ? 'scale-x-[-1]' : ''} ${className}`}
+    className={`h-3 sm:h-3.5 md:h-4 w-auto shrink-0 drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)] ${flip ? 'scale-x-[-1]' : ''} ${className}`}
   >
     <defs>
       <linearGradient id={flip ? "vedic-gold-flip" : "vedic-gold"} x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#d97706" stopOpacity="0.2" />
-        <stop offset="40%" stopColor="#fbbf24" stopOpacity="0.85" />
-        <stop offset="80%" stopColor="#fef08a" stopOpacity="1" />
+        <stop offset="0%" stopColor="#d97706" stopOpacity="0.15" />
+        <stop offset="40%" stopColor="#fbbf24" stopOpacity="0.8" />
+        <stop offset="80%" stopColor="#fef08a" stopOpacity="0.95" />
         <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
       </linearGradient>
       <linearGradient id="jewel-gold" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -47,73 +47,73 @@ const RoyalVedicFlourish: React.FC<{ flip?: boolean; className?: string }> = ({
     <path
       d="M 5 12 L 132 12"
       stroke={flip ? "url(#vedic-gold-flip)" : "url(#vedic-gold)"}
-      strokeWidth="1.1"
+      strokeWidth="0.8"
       strokeLinecap="round"
-      opacity="0.9"
+      opacity="0.85"
     />
 
     {/* Upper classical leaf scroll vine */}
     <path
       d="M 40 12 C 55 12, 65 5, 84 5 C 96 5, 106 9, 118 12"
       stroke="#fef08a"
-      strokeWidth="0.9"
+      strokeWidth="0.7"
       strokeLinecap="round"
       fill="none"
-      opacity="0.95"
+      opacity="0.9"
     />
     {/* Upper delicate spiral curl */}
     <path
       d="M 84 5 C 88 3, 92 3, 93 5 C 94 6.8, 92.5 8, 90 8 C 87.5 8, 86.5 6.5, 88 5.2"
       stroke="#fde047"
-      strokeWidth="0.8"
+      strokeWidth="0.6"
       fill="none"
-      opacity="0.9"
+      opacity="0.85"
     />
 
     {/* Lower classical leaf scroll vine */}
     <path
       d="M 40 12 C 55 12, 65 19, 84 19 C 96 19, 106 15, 118 12"
       stroke="#fef08a"
-      strokeWidth="0.9"
+      strokeWidth="0.7"
       strokeLinecap="round"
       fill="none"
-      opacity="0.95"
+      opacity="0.9"
     />
     {/* Lower delicate spiral curl */}
     <path
       d="M 84 19 C 88 21, 92 21, 93 19 C 94 17.2, 92.5 16, 90 16 C 87.5 16, 86.5 17.5, 88 18.8"
       stroke="#fde047"
-      strokeWidth="0.8"
+      strokeWidth="0.6"
       fill="none"
-      opacity="0.9"
+      opacity="0.85"
     />
 
     {/* Symmetrical Pearl Beads along the axis */}
-    <circle cx="15" cy="12" r="1.1" fill="#f59e0b" opacity="0.6" />
-    <circle cx="30" cy="12" r="1.3" fill="#fbbf24" opacity="0.8" />
-    <circle cx="58" cy="12" r="1.5" fill="#fde047" opacity="0.9" />
-    <circle cx="121" cy="12" r="1.6" fill="#fef08a" />
+    <circle cx="15" cy="12" r="0.9" fill="#f59e0b" opacity="0.5" />
+    <circle cx="30" cy="12" r="1.1" fill="#fbbf24" opacity="0.7" />
+    <circle cx="58" cy="12" r="1.3" fill="#fde047" opacity="0.85" />
+    <circle cx="121" cy="12" r="1.4" fill="#fef08a" />
 
     {/* Sacred 4-point Diamond Crest Jewel at x=102 */}
     <g transform="translate(102, 12)">
-      <path d="M 0 -5 L 2 0 L 0 5 L -2 0 Z" fill="url(#jewel-gold)" />
-      <path d="M -5 0 L 0 2 L 5 0 L 0 -2 Z" fill="url(#jewel-gold)" />
-      <circle cx="0" cy="0" r="1" fill="#ffffff" />
+      <path d="M 0 -4 L 1.6 0 L 0 4 L -1.6 0 Z" fill="url(#jewel-gold)" />
+      <path d="M -4 0 L 0 1.6 L 4 0 L 0 -1.6 Z" fill="url(#jewel-gold)" />
+      <circle cx="0" cy="0" r="0.8" fill="#ffffff" />
     </g>
 
     {/* Royal Lotus Blossom Petal Motif at x=130 facing the invocation */}
     <g transform="translate(130, 12)">
       {/* Central sparkling jewel */}
-      <circle cx="0" cy="0" r="2.2" fill="#ffffff" />
-      <circle cx="0" cy="0" r="1.1" fill="#d97706" />
+      <circle cx="0" cy="0" r="1.8" fill="#ffffff" />
+      <circle cx="0" cy="0" r="0.9" fill="#d97706" />
       {/* Top petal */}
-      <path d="M 0 0 C 1.4 -2.8, 2.8 -4.5, 0 -6.5 C -2.8 -4.5, -1.4 -2.8, 0 0 Z" fill="#fef08a" opacity="0.95" />
+      <path d="M 0 0 C 1.2 -2.4, 2.4 -4, 0 -5.5 C -2.4 -4, -1.2 -2.4, 0 0 Z" fill="#fef08a" opacity="0.9" />
       {/* Bottom petal */}
-      <path d="M 0 0 C 1.4 2.8, 2.8 4.5, 0 6.5 C -2.8 4.5, -1.4 2.8, 0 0 Z" fill="#fef08a" opacity="0.95" />
+      <path d="M 0 0 C 1.2 2.4, 2.4 4, 0 5.5 C -2.4 4, -1.2 2.4, 0 0 Z" fill="#fef08a" opacity="0.9" />
       {/* Inner petal pointing toward invocation */}
-      <path d="M 0 0 C 2.5 1.2, 4.5 2, 7 0 C 4.5 -2, 2.5 -1.2, 0 0 Z" fill="#ffffff" />
+      <path d="M 0 0 C 2.2 1, 4 1.8, 6 0 C 4 -1.8, 2.2 -1, 0 0 Z" fill="#ffffff" />
       {/* Outer petal */}
-      <path d="M 0 0 C -2.5 1.2, -4 2, -6 0 C -4 -2, -2.5 -1.2, 0 0 Z" fill="#fde047" opacity="0.9" />
+      <path d="M 0 0 C -2.2 1, -3.5 1.8, -5 0 C -3.5 -1.8, -2.2 -1, 0 0 Z" fill="#fde047" opacity="0.85" />
     </g>
   </svg>
 );
@@ -160,64 +160,66 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
     <header className={`sticky top-0 z-40 backdrop-blur-md bg-white/95 dark:bg-slate-900/95 border-b ${styles.accentBorderColor} transition-colors shadow-sm`}>
 
       {/* Top Banner — Sacred Royal Invocation with Symmetrical Vedic Art */}
-      <div className={`bg-gradient-to-r ${styles.bannerGradient} border-b border-amber-400/25 text-white py-1 sm:py-1.5 px-3 sm:px-5 flex items-center justify-between gap-2 sm:gap-4 transition-all shadow-xs relative overflow-hidden`}>
+      <div className={`bg-gradient-to-r ${styles.bannerGradient} border-b border-amber-400/25 border-t border-white/15 text-white py-1 sm:py-1.5 px-2.5 sm:px-5 flex items-center justify-between gap-1.5 sm:gap-4 transition-all shadow-xs relative overflow-hidden`}>
         
         {/* Subtle center divine radiance highlight */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-300/12 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-300/15 via-transparent to-transparent pointer-events-none" />
 
         {/* Left: Srila Prabhupada Circular Portrait */}
-        <div className="flex items-center gap-2 shrink-0 z-10" title="His Divine Grace A.C. Bhaktivedanta Swami Prabhupada">
-          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full ring-2 ring-amber-300/90 overflow-hidden bg-white/20 shadow-md shrink-0 flex items-center justify-center border border-amber-100/40 hover:scale-105 transition-transform">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 z-10" title="His Divine Grace A.C. Bhaktivedanta Swami Prabhupada">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full ring-1.5 ring-amber-200/80 p-[1px] bg-amber-500/20 shadow-sm shrink-0 flex items-center justify-center overflow-hidden hover:scale-105 transition-transform">
             <img
               src="/assets/srila_prabhupada_circle.png"
               alt="Srila Prabhupada"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-full"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/assets/srila_prabhupada.jpg';
               }}
             />
           </div>
-          <span className="hidden xl:inline font-bold text-[11px] text-amber-100 tracking-tight">
+          <span className="hidden xl:inline font-medium text-[11px] text-amber-100/90 tracking-wide">
             {language === 'bn' ? 'শ্রীল প্রভুপাদ' : 'Srila Prabhupada'}
           </span>
         </div>
 
         {/* Center: Symmetrical Vedic Art & Sacred Invocation */}
-        <div className="flex items-center justify-center gap-1.5 sm:gap-3 flex-1 min-w-0 px-1 overflow-hidden z-10">
-          {/* Left Symmetrical Art Flourish & Hairline */}
-          <div className="flex-1 flex justify-end items-center gap-1.5 sm:gap-2 min-w-[20px] overflow-hidden">
-            <div className="hidden xs:block flex-1 h-[1px] bg-gradient-to-r from-transparent via-amber-300/30 to-amber-300/75 max-w-[140px] sm:max-w-[200px]" />
-            <RoyalVedicFlourish flip={false} />
+        <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1 min-w-0 px-0.5 sm:px-1 overflow-hidden z-10">
+          {/* Left Symmetrical Art Flourish & Delicate Hairline */}
+          <div className="flex-1 flex justify-end items-center gap-1 sm:gap-2 min-w-[8px] overflow-hidden">
+            <div className="flex-1 h-[0.5px] bg-gradient-to-r from-transparent via-amber-200/30 to-amber-300/70 max-w-[90px] sm:max-w-[180px]" />
+            <RoyalVedicFlourish flip={false} className="hidden sm:block opacity-90" />
+            <span className="text-amber-200/60 text-[8px] sm:text-[9px] select-none leading-none">✦</span>
           </div>
 
-          {/* Centerpiece: Sacred Invocation with Halo Om Medallions */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 px-1">
-            <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-400/20 border border-amber-300/60 text-amber-200 font-serif font-black text-[11px] sm:text-xs shadow-xs select-none backdrop-blur-xs">
+          {/* Centerpiece: Sacred Invocation with Ethereal Om Accents */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 px-0.5 sm:px-1">
+            <span className="text-amber-200/90 font-light text-[10px] sm:text-xs select-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
               ॐ
             </span>
-            <h2 className={`${language === 'bn' ? 'font-serifBengali font-bold' : 'font-playfair italic font-semibold'} text-xs xs:text-sm sm:text-[15px] md:text-base tracking-widest text-amber-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center whitespace-nowrap`}>
+            <h2 className={`${language === 'bn' ? 'font-serifBengali font-normal' : 'font-cormorant italic font-light'} text-xs xs:text-[13px] sm:text-[15px] md:text-base tracking-[0.12em] xs:tracking-[0.14em] sm:tracking-[0.18em] text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] text-center whitespace-nowrap select-none`}>
               {language === 'bn'
                 ? 'শ্রীশ্রী গুরু ও গৌরাঙ্গ জয়তু'
                 : 'Shree Shree Guru and Gauranga Jayatu'}
             </h2>
-            <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-400/20 border border-amber-300/60 text-amber-200 font-serif font-black text-[11px] sm:text-xs shadow-xs select-none backdrop-blur-xs">
+            <span className="text-amber-200/90 font-light text-[10px] sm:text-xs select-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
               ॐ
             </span>
           </div>
 
-          {/* Right Symmetrical Art Flourish & Hairline */}
-          <div className="flex-1 flex justify-start items-center gap-1.5 sm:gap-2 min-w-[20px] overflow-hidden">
-            <RoyalVedicFlourish flip={true} />
-            <div className="hidden xs:block flex-1 h-[1px] bg-gradient-to-l from-transparent via-amber-300/30 to-amber-300/75 max-w-[140px] sm:max-w-[200px]" />
+          {/* Right Symmetrical Art Flourish & Delicate Hairline */}
+          <div className="flex-1 flex justify-start items-center gap-1 sm:gap-2 min-w-[8px] overflow-hidden">
+            <span className="text-amber-200/60 text-[8px] sm:text-[9px] select-none leading-none">✦</span>
+            <RoyalVedicFlourish flip={true} className="hidden sm:block opacity-90" />
+            <div className="flex-1 h-[0.5px] bg-gradient-to-l from-transparent via-amber-200/30 to-amber-300/70 max-w-[90px] sm:max-w-[180px]" />
           </div>
         </div>
 
         {/* Right: IYF Chittagong Logo */}
-        <div className="flex items-center gap-2 shrink-0 z-10" title="ISKCON Youth Forum (IYF) Chittagong">
-          <span className="hidden xl:inline font-bold text-[11px] text-amber-100 tracking-tight">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 z-10" title="ISKCON Youth Forum (IYF) Chittagong">
+          <span className="hidden xl:inline font-medium text-[11px] text-amber-100/90 tracking-wide">
             IYF
           </span>
-          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white ring-2 ring-amber-300/90 p-0.5 overflow-hidden shadow-md shrink-0 flex items-center justify-center border border-amber-100/40 hover:scale-105 transition-transform">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white ring-1.5 ring-amber-200/80 p-[1.5px] shadow-sm shrink-0 flex items-center justify-center overflow-hidden hover:scale-105 transition-transform">
             <img
               src="/assets/iyf_logo.png"
               alt="IYF Chittagong"
@@ -228,7 +230,6 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
             />
           </div>
         </div>
-
       </div>
 
       {/* Main Row */}
