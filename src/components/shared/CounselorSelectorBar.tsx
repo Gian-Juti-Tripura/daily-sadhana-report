@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, ChevronDown, Plus } from 'lucide-react';
 import type { CounseleeProfile } from '../../types/sadhana';
-import { COUNSELORS_LIST, getRegisteredCounselees } from '../../data/counseleesData';
+import { COUNSELORS_LIST, getRegisteredCounselees, updateDevoteeCounselor } from '../../data/counseleesData';
 import { COUNSELOR_BN_MAP } from '../layout/CounselorFooter';
 import { useTheme } from '../../context/ThemeContext';
 import { DevoteeAvatar } from './DevoteeAvatar';
+import toast from 'react-hot-toast';
 
 interface CounselorSelectorBarProps {
   counselees: CounseleeProfile[];
@@ -24,7 +25,8 @@ export const CounselorSelectorBar: React.FC<CounselorSelectorBarProps> = ({
   const { styles } = useTheme();
   const [localCounselees, setLocalCounselees] = useState<CounseleeProfile[]>(initialCounselees);
   const [selectedCounselor, setSelectedCounselor] = useState<string>(() => {
-    return activeDevotee.counselorName || localStorage.getItem('voice_selected_counselor') || COUNSELORS_LIST[0];
+    const saved = localStorage.getItem(`voice_counselor_${activeDevotee.id}`) || localStorage.getItem('voice_selected_counselor');
+    return saved || activeDevotee.counselorName || COUNSELORS_LIST[0];
   });
 
   useEffect(() => {
@@ -32,10 +34,13 @@ export const CounselorSelectorBar: React.FC<CounselorSelectorBarProps> = ({
   }, [initialCounselees]);
 
   useEffect(() => {
+    const saved = localStorage.getItem(`voice_counselor_${activeDevotee.id}`) || localStorage.getItem('voice_selected_counselor');
     if (activeDevotee.counselorName) {
       setSelectedCounselor(activeDevotee.counselorName);
+    } else if (saved) {
+      setSelectedCounselor(saved);
     }
-  }, [activeDevotee.counselorName]);
+  }, [activeDevotee.id, activeDevotee.counselorName]);
 
   useEffect(() => {
     const handleUpdate = (e: Event) => {
@@ -65,21 +70,33 @@ export const CounselorSelectorBar: React.FC<CounselorSelectorBarProps> = ({
       handleOpenAuth();
       return;
     }
+    if (newCounselor === 'Custom (অন্যান্য)') {
+      const customName = window.prompt(
+        language === 'bn'
+          ? 'অনুগ্রহ করে নতুন কাউন্সেলরের নাম লিখুন:'
+          : 'Please enter counselor name:'
+      );
+      if (!customName || !customName.trim()) {
+        return;
+      }
+      newCounselor = customName.trim();
+    }
     setSelectedCounselor(newCounselor);
     localStorage.setItem('voice_selected_counselor', newCounselor);
-    const updated = {
+    localStorage.setItem(`voice_counselor_${activeDevotee.id}`, newCounselor);
+    const updated = updateDevoteeCounselor(activeDevotee.id, newCounselor) || {
       ...activeDevotee,
       counselorName: newCounselor
     };
     onDevoteeChange(updated);
-    window.dispatchEvent(new CustomEvent('voice_counselor_changed', { detail: newCounselor }));
+    toast.success(language === 'bn' ? 'কাউন্সেলর স্থায়ীভাবে সংরক্ষণ করা হয়েছে!' : 'Counselor updated and saved permanently!');
   };
 
   const handleDevoteeSelect = (devoteeId: string) => {
     const found = filteredCounselees.find((d) => d.id === devoteeId);
     if (!found) return;
 
-    const assignedCounselor = found.counselorName || selectedCounselor || COUNSELORS_LIST[0];
+    const assignedCounselor = localStorage.getItem(`voice_counselor_${found.id}`) || found.counselorName || selectedCounselor || COUNSELORS_LIST[0];
     setSelectedCounselor(assignedCounselor);
     localStorage.setItem('voice_selected_counselor', assignedCounselor);
     const updated = {
@@ -112,6 +129,11 @@ export const CounselorSelectorBar: React.FC<CounselorSelectorBarProps> = ({
                 {language === 'bn' ? (COUNSELOR_BN_MAP[c] || c) : c}
               </option>
             ))}
+            {!COUNSELORS_LIST.includes(selectedCounselor) && selectedCounselor && selectedCounselor !== '__add__' && (
+              <option value={selectedCounselor} className="py-1 text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 font-bold">
+                {selectedCounselor}
+              </option>
+            )}
             <option value="__add__" className={`font-bold py-1 ${styles.primaryTextColor} bg-white dark:bg-slate-900`}>
               + {language === 'bn' ? 'নতুন কাউন্সেলর যোগ করুন...' : 'Add Counselor...'}
             </option>

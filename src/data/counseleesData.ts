@@ -217,17 +217,19 @@ export const getRegisteredCounselees = (): CounseleeProfile[] => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Enrich existing records with Bangla names and avatar from storage/INITIAL_COUNSELEES
+        // Enrich existing records with Bangla names, avatar, and counselor from storage/INITIAL_COUNSELEES
         return parsed.map((p: CounseleeProfile) => {
           const match = INITIAL_COUNSELEES.find(init => init.id === p.id || init.name === p.name);
           const storedAvatar = localStorage.getItem(`voice_devotee_avatar_${p.id}`);
           const storedFlower = localStorage.getItem(`voice_devotee_flower_${p.id}`);
+          const storedCounselor = localStorage.getItem(`voice_counselor_${p.id}`);
           return {
             ...p,
             nameBn: p.nameBn || match?.nameBn || p.name,
             spiritualNameBn: p.spiritualNameBn || match?.spiritualNameBn || p.spiritualName,
             avatarUrl: p.avatarUrl || storedAvatar || match?.avatarUrl,
-            flowerAvatarId: p.flowerAvatarId || storedFlower || match?.flowerAvatarId
+            flowerAvatarId: p.flowerAvatarId || storedFlower || match?.flowerAvatarId,
+            counselorName: storedCounselor || p.counselorName || match?.counselorName || PRIMARY_COUNSELOR.name
           };
         });
       }
@@ -238,10 +240,12 @@ export const getRegisteredCounselees = (): CounseleeProfile[] => {
   return INITIAL_COUNSELEES.map(p => {
     const storedAvatar = localStorage.getItem(`voice_devotee_avatar_${p.id}`);
     const storedFlower = localStorage.getItem(`voice_devotee_flower_${p.id}`);
+    const storedCounselor = localStorage.getItem(`voice_counselor_${p.id}`);
     return {
       ...p,
       avatarUrl: storedAvatar || p.avatarUrl,
-      flowerAvatarId: storedFlower || p.flowerAvatarId
+      flowerAvatarId: storedFlower || p.flowerAvatarId,
+      counselorName: storedCounselor || p.counselorName || PRIMARY_COUNSELOR.name
     };
   });
 };
@@ -252,6 +256,35 @@ export const saveRegisteredCounselees = (list: CounseleeProfile[]): void => {
   } catch (e) {
     console.error('Error saving counselees to localStorage', e);
   }
+};
+
+export const updateDevoteeCounselor = (
+  devoteeId: string,
+  counselorName: string
+): CounseleeProfile | null => {
+  const current = getRegisteredCounselees();
+  let updatedProfile: CounseleeProfile | null = null;
+  const updatedList = current.map(p => {
+    if (p.id === devoteeId) {
+      updatedProfile = {
+        ...p,
+        counselorName
+      };
+      return updatedProfile;
+    }
+    return p;
+  });
+
+  localStorage.setItem('voice_selected_counselor', counselorName);
+  localStorage.setItem(`voice_counselor_${devoteeId}`, counselorName);
+
+  if (updatedProfile) {
+    saveRegisteredCounselees(updatedList);
+    window.dispatchEvent(new CustomEvent('voice_counselor_changed', { detail: counselorName }));
+    window.dispatchEvent(new CustomEvent('voice_devotees_updated', { detail: updatedProfile }));
+  }
+
+  return updatedProfile;
 };
 
 export const addRegisteredCounselee = (newCounselee: Partial<CounseleeProfile>): CounseleeProfile => {

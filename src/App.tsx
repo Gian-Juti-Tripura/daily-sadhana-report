@@ -24,7 +24,15 @@ const AppContent: React.FC = () => {
   const [activeDevotee, setActiveDevotee] = useState<CounseleeProfile>(() => {
     const savedId = localStorage.getItem('voice_active_devotee_id');
     const found = counselees.find(c => c.id === savedId);
-    return found || counselees[0];
+    const initial = found || counselees[0];
+    const savedCounselor = localStorage.getItem(`voice_counselor_${initial.id}`) || localStorage.getItem('voice_selected_counselor');
+    if (savedCounselor && initial.counselorName !== savedCounselor) {
+      return {
+        ...initial,
+        counselorName: savedCounselor
+      };
+    }
+    return initial;
   });
 
   // Modal states
@@ -67,10 +75,13 @@ const AppContent: React.FC = () => {
   }, []);
 
   const handleSelectDevotee = (devotee: CounseleeProfile) => {
-    setActiveDevotee(devotee);
+    const savedCounselor = localStorage.getItem(`voice_counselor_${devotee.id}`) || devotee.counselorName;
+    const effectiveDevotee = savedCounselor ? { ...devotee, counselorName: savedCounselor } : devotee;
+    setActiveDevotee(effectiveDevotee);
     localStorage.setItem('voice_active_devotee_id', devotee.id);
-    if (devotee.counselorName) {
-      localStorage.setItem('voice_selected_counselor', devotee.counselorName);
+    if (effectiveDevotee.counselorName) {
+      localStorage.setItem('voice_selected_counselor', effectiveDevotee.counselorName);
+      localStorage.setItem(`voice_counselor_${devotee.id}`, effectiveDevotee.counselorName);
     }
   };
 

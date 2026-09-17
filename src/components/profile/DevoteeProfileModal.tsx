@@ -13,7 +13,7 @@ import {
 } from '../../data/campsData';
 
 import type { CounseleeProfile } from '../../types/sadhana';
-import { getRegisteredCounselees, saveRegisteredCounselees, PRIMARY_COUNSELOR } from '../../data/counseleesData';
+import { getRegisteredCounselees, saveRegisteredCounselees, PRIMARY_COUNSELOR, COUNSELORS_LIST } from '../../data/counseleesData';
 import { DevoteeAvatar } from '../shared/DevoteeAvatar';
 import { toast } from 'react-hot-toast';
 
@@ -28,22 +28,23 @@ export const DevoteeProfileModal: React.FC<DevoteeProfileModalProps> = ({
   isOpen,
   onClose,
   selectedDevotee,
-  onSelectDevotee
+  onSelectDevotee,
 }) => {
   const { language } = useLanguage();
   const { styles } = useTheme();
+
+  const [allCounselees, setAllCounselees] = useState<CounseleeProfile[]>(getRegisteredCounselees());
+  const [formData, setFormData] = useState<CounseleeProfile>(selectedDevotee);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'SYLLABUS' | 'COURSES' | 'CAMPS' | 'DEVOTEES_LIST'>('OVERVIEW');
   const [syllabusFilterYear, setSyllabusFilterYear] = useState<'ALL' | 1 | 2 | 3 | 4>('ALL');
   const [isEditing, setIsEditing] = useState(false);
-  
-  const [formData, setFormData] = useState<CounseleeProfile>(selectedDevotee);
   const [newDevoteeName, setNewDevoteeName] = useState('');
   const [newDevoteeNameBn, setNewDevoteeNameBn] = useState('');
-  const [allCounselees, setAllCounselees] = useState<CounseleeProfile[]>(() => getRegisteredCounselees());
 
   useEffect(() => {
     setFormData(selectedDevotee);
-  }, [selectedDevotee]);
+    setIsEditing(false);
+  }, [selectedDevotee, isOpen]);
 
   // Keep list updated if updated from another tab or component
   useEffect(() => {
@@ -61,6 +62,12 @@ export const DevoteeProfileModal: React.FC<DevoteeProfileModalProps> = ({
     saveRegisteredCounselees(updatedList);
     setAllCounselees(updatedList);
     onSelectDevotee(formData);
+    if (formData.counselorName) {
+      localStorage.setItem(`voice_counselor_${formData.id}`, formData.counselorName);
+      localStorage.setItem('voice_selected_counselor', formData.counselorName);
+      window.dispatchEvent(new CustomEvent('voice_counselor_changed', { detail: formData.counselorName }));
+    }
+    window.dispatchEvent(new CustomEvent('voice_devotees_updated', { detail: formData }));
     setIsEditing(false);
     toast.success(language === 'bn' ? 'প্রোফাইল তথ্য সফলভাবে সংরক্ষিত হয়েছে!' : 'Profile updated successfully!');
   };
@@ -623,9 +630,24 @@ export const DevoteeProfileModal: React.FC<DevoteeProfileModalProps> = ({
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                           {language === 'bn' ? 'দায়িত্বপ্রাপ্ত কাউন্সেলর' : 'Assigned Counselor'}
                         </label>
-                        <p className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100">
-                          {formData.counselorName}
-                        </p>
+                        {isEditing ? (
+                          <select
+                            value={formData.counselorName}
+                            onChange={(e) => setFormData({ ...formData, counselorName: e.target.value })}
+                            className="mt-1 px-2.5 py-1 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100"
+                          >
+                            {COUNSELORS_LIST.map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                            {!COUNSELORS_LIST.includes(formData.counselorName) && formData.counselorName && (
+                              <option value={formData.counselorName}>{formData.counselorName}</option>
+                            )}
+                          </select>
+                        ) : (
+                          <p className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100">
+                            {formData.counselorName}
+                          </p>
+                        )}
                       </div>
                     </div>
 
