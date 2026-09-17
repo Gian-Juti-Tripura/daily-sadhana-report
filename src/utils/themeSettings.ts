@@ -154,7 +154,7 @@ export const THEME_UPDATED_EVENT = 'advaita_theme_updated';
 const STORAGE_KEYS = {
   MODE: 'advaita_theme_mode',
   PALETTE: 'advaita_theme_palette',
-  FLOWERS: 'advaita_theme_flower_shower',
+  FLOWERS: 'advaita_theme_flower_shower_v2',
   LIGHTING: 'advaita_theme_lighting_effects',
   BACKGROUND: 'advaita_theme_bg_atmosphere'
 };
@@ -185,7 +185,8 @@ export const getThemeSettings = (): ThemeSettingsState => {
     const palette: ThemePaletteId = validPalettes.includes(rawPalette) ? rawPalette : 'saffron';
 
     const rawFlowers = localStorage.getItem(STORAGE_KEYS.FLOWERS);
-    const flowerShower = rawFlowers === null ? true : rawFlowers === 'true';
+    // By default, flower shower is OFF (false) unless devotee explicitly turns it on
+    const flowerShower = rawFlowers === 'true';
 
     const rawLighting = localStorage.getItem(STORAGE_KEYS.LIGHTING);
     const lightingEffects = rawLighting === null ? true : rawLighting === 'true';
@@ -205,7 +206,7 @@ export const getThemeSettings = (): ThemeSettingsState => {
     return {
       mode: 'light',
       palette: 'saffron',
-      flowerShower: true,
+      flowerShower: false,
       lightingEffects: true,
       backgroundAtmosphere: true
     };
