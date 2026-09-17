@@ -9,6 +9,7 @@ import { CounselorDeskPage } from './pages/counselor/CounselorDeskPage';
 import { DevoteeProfileModal } from './components/profile/DevoteeProfileModal';
 import { ThemeCustomizerModal } from './components/theme/ThemeCustomizerModal';
 import { DevoteeAuthModal } from './components/auth/DevoteeAuthModal';
+import { InstallPromptBanner } from './components/pwa/InstallPromptBanner';
 import { FallingFlowers } from './components/effects/FallingFlowers';
 import { Toaster } from 'react-hot-toast';
 import { getRegisteredCounselees } from './data/counseleesData';
@@ -165,6 +166,9 @@ const AppContent: React.FC = () => {
         activeDevotee={activeDevotee}
         onSelectDevotee={handleSelectDevotee}
       />
+
+      {/* PWA Install Prompt Banner */}
+      <InstallPromptBanner />
     </div>
   );
 };
