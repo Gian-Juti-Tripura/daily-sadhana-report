@@ -322,101 +322,113 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
         ? (customBookName.trim() || 'বৈষ্ণব সাহিত্য')
         : (selectedBookObj?.titleBn || effectiveBookTitle);
 
-      const chapterBn = scriptureChapterPage ? ` (${formatChapterBn(scriptureChapterPage)})` : '';
+      let formattedBookBn = bookNameBn;
+      if (selectedBookObj?.semesterLabelBn) {
+        formattedBookBn += ` (${selectedBookObj.semesterLabelBn})`;
+      }
+      if (scriptureChapterPage) {
+        formattedBookBn += `, ${formatChapterBn(scriptureChapterPage)}`;
+      }
+
       const stayingBn = STAYING_BN_MAP[stayingAt] || stayingAt;
 
       return `*দৈনিক সাধনা রিপোর্ট — ${toBnNum(reportDate)}*
 *${activeDevotee.name}*
 অবস্থান: *${stayingBn}*
 
-━━━━━━━━━━━━━━━━
 *দেহ*
-  ├ শয়ন: ${toBnNum(wentToBed)}
-  ├ শয্যা ত্যাগ: ${toBnNum(gotUp)}
-  └ দিবানিদ্রা: ${toBnNum(dayRestMinutes)} মিনিট
+(১) শয়ন সময়: ${toBnNum(wentToBed)}
+(২) শয্যা ত্যাগ: ${toBnNum(gotUp)}
+(৩) দিবানিদ্রা: ${toBnNum(dayRestMinutes)} মিনিট
 
 *আত্মা*
-  ├ জপ: ${toBnNum(japaRounds)} মালা (সমাপ্তি: ${toBnNum(japaCompletionTime)})
-  ├ শাস্ত্র অধ্যয়ন: ${toBnNum(scriptureStudyMinutes)} মিনিট
-  │   ├ ${bookNameBn}${chapterBn}
-  │   └ নোট: ${scriptureNotes ? 'হ্যাঁ' : 'না'}
-  └ প্রবচন শ্রবণ: ${toBnNum(totalHearingMinutes)} মিনিট
-      ├ প্রভুপাদ: ${toBnNum(lectureSpMinutes)} মি.
-      ├ গুরুমহারাজ: ${toBnNum(lectureGuruMinutes)} মি.
-      └ অন্যান্য: ${toBnNum(lectureOtherMinutes)} মি.
+(১) জপ: ${toBnNum(japaRounds)} মালা (জপ সমাপ্তির সময়: ${toBnNum(japaCompletionTime)})
+(২) শাস্ত্রীয় অধ্যয়ন: ${toBnNum(scriptureStudyMinutes)} মিনিট
+    ├ অধ্যয়নকৃত গ্রন্থ: ${formattedBookBn}
+    └ নোট: ${scriptureNotes ? 'হ্যাঁ' : 'না'}
+(৩) প্রবচন শ্রবণ: ${toBnNum(totalHearingMinutes)} মিনিট
+    ├ শ্রীল প্রভুপাদ: ${toBnNum(lectureSpMinutes)} মিনিট
+    ├ গুরুমহারাজ: ${toBnNum(lectureGuruMinutes)} মিনিট
+    └ অন্যান্য: ${toBnNum(lectureOtherMinutes)} মিনিট
 
-*সেবা ও পড়াশোনা*
-  ├ সেবা: ${effectiveRenderedSevaBn}
-  └ প্রাতিষ্ঠানিক পড়াশোনা: ${toBnNum(academicStudyHours)} ঘন্টা
+*সেবা ও প্রাতিষ্ঠানিক পড়াশোনা:*
+(১) সম্পাদিত সেবা: ${effectiveRenderedSevaBn}
+(২) প্রাতিষ্ঠানিক পড়াশোনা: ${toBnNum(academicStudyHours)} ঘন্টা
 
-*মর্নিং প্রোগ্রাম*
-  ├ মঙ্গল আরতি: ${mangalarati ? 'হ্যাঁ' : 'না'}
-  ├ নৃসিংহ আরতি: ${nrsimharati ? 'হ্যাঁ' : 'না'}
-  ├ তুলসী আরতি ও পরিক্রমা: ${tulasiArati ? 'হ্যাঁ' : 'না'}
-  ├ বৃন্দাদেবীকে জলদান: ${wateringVrinda ? 'হ্যাঁ' : 'না'}
-  └ শিক্ষাষ্টক ও দশবিধ নামাপরাধ পাঠ: ${siksastakamAndOffenses ? 'হ্যাঁ' : 'না'}
+*মর্নিং প্রোগ্রাম উপস্থিতি:*
+(১) মঙ্গল আরতি: ${mangalarati ? 'হ্যাঁ' : 'না'}
+(২) নৃসিংহ আরতি: ${nrsimharati ? 'হ্যাঁ' : 'না'}
+(৩) তুলসী আরতি ও পরিক্রমা: ${tulasiArati ? 'হ্যাঁ' : 'না'}
+(৪) বৃন্দাদেবীকে জলদান: ${wateringVrinda ? 'হ্যাঁ' : 'না'}
+(৫) শিক্ষাষ্টক ও দশবিধ নামাপরাধ পাঠ: ${siksastakamAndOffenses ? 'হ্যাঁ' : 'না'}
 
-*অন্যান্য*
-  ├ শ্লোক মুখস্থ: ${slokaMemorized ? 'হ্যাঁ' : 'না'}
-  ├ ভজন / গায়ত্রী: ${bhajanGayatriCompleted ? 'হ্যাঁ' : 'না'}
-  └ স্ক্রিন সময়: ${toBnNum(socialMediaMinutes)} মিনিট
+*অন্যান্য:*
+(১) শ্লোক মুখস্থকরণ: ${slokaMemorized ? 'হ্যাঁ' : 'না'}
+(২) ভজন / গায়ত্রী: ${bhajanGayatriCompleted ? 'হ্যাঁ' : 'না'}
+(৩) সোশ্যাল মিডিয়া / স্ক্রিন সময়: ${toBnNum(socialMediaMinutes)} মিনিট
 
-━━━━━━━━━━━━━━━━
-*দৈনিক মূল্যায়ন (১৭৫ ম্যাট্রিক্স)*
-  স্কোর: *${toBnNum(scoreBreakdown.percentage)}% (${toBnNum(scoreBreakdown.totalMarks)}/১৭৫)* — স্কেল ${toBnNum(activeDevotee.scaleId)}
-  ├ দেহ: ${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ (${toBnNum(scoreBreakdown.bodyAvgPct)}%)
-  ├ আত্মা: ${toBnNum(scoreBreakdown.soulTotal)}/৭৫ (${toBnNum(scoreBreakdown.soulAvgPct)}%)
-  └ মর্নিং প্রোগ্রাম: ${toBnNum(scoreBreakdown.morningProgramMarks)}/২৫`;
+*দৈনিক মূল্যায়ন (১৭৫ ম্যাট্রিক্স):*
+▪ স্কোর: ${toBnNum(scoreBreakdown.percentage)}% (${toBnNum(scoreBreakdown.totalMarks)}/১৭৫ নম্বর, স্কেল ${toBnNum(activeDevotee.scaleId)})
+▪ বিভাগীয় গড়:
+    ├ দেহ: ${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ (${toBnNum(scoreBreakdown.bodyAvgPct)}%)
+    ├ আত্মা: ${toBnNum(scoreBreakdown.soulTotal)}/৭৫ (${toBnNum(scoreBreakdown.soulAvgPct)}%)
+    └ মর্নিং প্রোগ্রাম: ${toBnNum(scoreBreakdown.morningProgramMarks)}/২৫`;
     }
 
     // English Report Format
     const bookNameEn = scriptureBook === 'custom'
       ? effectiveBookTitle
       : (selectedBookObj?.titleEn || effectiveBookTitle);
-    const chapterEn = scriptureChapterPage ? ` (${scriptureChapterPage})` : '';
+
+    let formattedBookEn = bookNameEn;
+    if (selectedBookObj?.semesterLabelEn) {
+      formattedBookEn += ` (${selectedBookObj.semesterLabelEn})`;
+    }
+    if (scriptureChapterPage) {
+      formattedBookEn += `, ${scriptureChapterPage}`;
+    }
 
     return `*Daily Sadhana Report — ${reportDate}*
 *${activeDevotee.name}*
-Staying at: *${stayingAt}*
+Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
-━━━━━━━━━━━━━━━━
 *Body*
-  ├ Went to bed: ${wentToBed}
-  ├ Got up: ${gotUp}
-  └ Day rest: ${dayRestMinutes} min
+(1) Bed time: ${wentToBed}
+(2) Wake-up time: ${gotUp}
+(3) Day rest: ${dayRestMinutes} min
 
 *Soul*
-  ├ Japa: ${japaRounds} rounds (Completed: ${japaCompletionTime})
-  ├ Scripture study: ${scriptureStudyMinutes} min
-  │   ├ ${bookNameEn}${chapterEn}
-  │   └ Notes: ${scriptureNotes ? 'Yes' : 'No'}
-  └ Lecture hearing: ${totalHearingMinutes} min
-      ├ Srila Prabhupada: ${lectureSpMinutes} min
-      ├ Gurumaharaj: ${lectureGuruMinutes} min
-      └ Others: ${lectureOtherMinutes} min
+(1) Japa: ${japaRounds} rounds (Completion time: ${japaCompletionTime})
+(2) Scripture study: ${scriptureStudyMinutes} min
+    ├ Book studied: ${formattedBookEn}
+    └ Notes: ${scriptureNotes ? 'Yes' : 'No'}
+(3) Lecture hearing: ${totalHearingMinutes} min
+    ├ Srila Prabhupada: ${lectureSpMinutes} min
+    ├ Gurumaharaj: ${lectureGuruMinutes} min
+    └ Others: ${lectureOtherMinutes} min
 
-*Seva & Academic Study*
-  ├ Seva: ${effectiveRenderedSeva}
-  └ Academic study: ${academicStudyHours} hrs
+*Seva & Academic Study:*
+(1) Seva performed: ${effectiveRenderedSeva}
+(2) Academic study: ${academicStudyHours} hrs
 
-*Morning Program*
-  ├ Mangalarati: ${mangalarati ? 'Yes' : 'No'}
-  ├ Nrsimharati: ${nrsimharati ? 'Yes' : 'No'}
-  ├ Tulasi arati & parikrama: ${tulasiArati ? 'Yes' : 'No'}
-  ├ Watering Vrinda devi: ${wateringVrinda ? 'Yes' : 'No'}
-  └ Siksastakam & 10 offenses: ${siksastakamAndOffenses ? 'Yes' : 'No'}
+*Morning Program Attendance:*
+(1) Mangalarati: ${mangalarati ? 'Yes' : 'No'}
+(2) Nrsimharati: ${nrsimharati ? 'Yes' : 'No'}
+(3) Tulasi arati & parikrama: ${tulasiArati ? 'Yes' : 'No'}
+(4) Watering Vrinda devi: ${wateringVrinda ? 'Yes' : 'No'}
+(5) Siksastakam & 10 offenses: ${siksastakamAndOffenses ? 'Yes' : 'No'}
 
-*Additional*
-  ├ Sloka memorizing: ${slokaMemorized ? 'Yes' : 'No'}
-  ├ Bhajan / Gayatri: ${bhajanGayatriCompleted ? 'Yes' : 'No'}
-  └ Screen time: ${socialMediaMinutes} min
+*Additional:*
+(1) Sloka memorizing: ${slokaMemorized ? 'Yes' : 'No'}
+(2) Bhajan / Gayatri: ${bhajanGayatriCompleted ? 'Yes' : 'No'}
+(3) Social media / Screen time: ${socialMediaMinutes} min
 
-━━━━━━━━━━━━━━━━
-*Daily Evaluation (175 Matrix)*
-  Score: *${scoreBreakdown.percentage}% (${scoreBreakdown.totalMarks}/175)* — Scale ${activeDevotee.scaleId}
-  ├ Body: ${scoreBreakdown.bodyTotal}/75 (${scoreBreakdown.bodyAvgPct}%)
-  ├ Soul: ${scoreBreakdown.soulTotal}/75 (${scoreBreakdown.soulAvgPct}%)
-  └ Morning Program: ${scoreBreakdown.morningProgramMarks}/25`;
+*Daily Evaluation (175 Matrix):*
+▪ Score: ${scoreBreakdown.percentage}% (${scoreBreakdown.totalMarks}/175 marks, Scale ${activeDevotee.scaleId})
+▪ Category Average:
+    ├ Body: ${scoreBreakdown.bodyTotal}/75 (${scoreBreakdown.bodyAvgPct}%)
+    ├ Soul: ${scoreBreakdown.soulTotal}/75 (${scoreBreakdown.soulAvgPct}%)
+    └ Morning Program: ${scoreBreakdown.morningProgramMarks}/25`;
   };
 
   const handleCopyWhatsApp = () => {
