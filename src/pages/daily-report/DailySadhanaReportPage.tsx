@@ -344,12 +344,12 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 *আত্মা*
 (১) জপ: ${toBnNum(japaRounds)} মালা (জপ সমাপ্তির সময়: ${toBnNum(japaCompletionTime)})
 (২) শাস্ত্রীয় অধ্যয়ন: ${toBnNum(scriptureStudyMinutes)} মিনিট
-    ├ অধ্যয়নকৃত গ্রন্থ: ${formattedBookBn}
-    └ নোট: ${scriptureNotes ? 'হ্যাঁ' : 'না'}
+    (ক) অধ্যয়নকৃত গ্রন্থ: ${formattedBookBn}
+    (খ) নোট: ${scriptureNotes ? 'হ্যাঁ' : 'না'}
 (৩) প্রবচন শ্রবণ: ${toBnNum(totalHearingMinutes)} মিনিট
-    ├ শ্রীল প্রভুপাদ: ${toBnNum(lectureSpMinutes)} মিনিট
-    ├ গুরুমহারাজ: ${toBnNum(lectureGuruMinutes)} মিনিট
-    └ অন্যান্য: ${toBnNum(lectureOtherMinutes)} মিনিট
+    (ক) শ্রীল প্রভুপাদ: ${toBnNum(lectureSpMinutes)} মিনিট
+    (খ) গুরুমহারাজ: ${toBnNum(lectureGuruMinutes)} মিনিট
+    (গ) অন্যান্য: ${toBnNum(lectureOtherMinutes)} মিনিট
 
 *সেবা ও প্রাতিষ্ঠানিক পড়াশোনা:*
 (১) সম্পাদিত সেবা: ${effectiveRenderedSevaBn}
@@ -370,9 +370,9 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 *দৈনিক মূল্যায়ন (১৭৫ ম্যাট্রিক্স):*
 ▪ স্কোর: ${toBnNum(scoreBreakdown.percentage)}% (${toBnNum(scoreBreakdown.totalMarks)}/১৭৫ নম্বর, স্কেল ${toBnNum(activeDevotee.scaleId)})
 ▪ বিভাগীয় গড়:
-    ├ দেহ: ${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ (${toBnNum(scoreBreakdown.bodyAvgPct)}%)
-    ├ আত্মা: ${toBnNum(scoreBreakdown.soulTotal)}/৭৫ (${toBnNum(scoreBreakdown.soulAvgPct)}%)
-    └ মর্নিং প্রোগ্রাম: ${toBnNum(scoreBreakdown.morningProgramMarks)}/২৫`;
+    (ক) দেহ: ${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ (${toBnNum(scoreBreakdown.bodyAvgPct)}%)
+    (খ) আত্মা: ${toBnNum(scoreBreakdown.soulTotal)}/৭৫ (${toBnNum(scoreBreakdown.soulAvgPct)}%)
+    (গ) মর্নিং প্রোগ্রাম: ${toBnNum(scoreBreakdown.morningProgramMarks)}/২৫`;
     }
 
     // English Report Format
@@ -400,12 +400,12 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 *Soul*
 (1) Japa: ${japaRounds} rounds (Completion time: ${japaCompletionTime})
 (2) Scripture study: ${scriptureStudyMinutes} min
-    ├ Book studied: ${formattedBookEn}
-    └ Notes: ${scriptureNotes ? 'Yes' : 'No'}
+    (a) Book studied: ${formattedBookEn}
+    (b) Notes: ${scriptureNotes ? 'Yes' : 'No'}
 (3) Lecture hearing: ${totalHearingMinutes} min
-    ├ Srila Prabhupada: ${lectureSpMinutes} min
-    ├ Gurumaharaj: ${lectureGuruMinutes} min
-    └ Others: ${lectureOtherMinutes} min
+    (a) Srila Prabhupada: ${lectureSpMinutes} min
+    (b) Gurumaharaj: ${lectureGuruMinutes} min
+    (c) Others: ${lectureOtherMinutes} min
 
 *Seva & Academic Study:*
 (1) Seva performed: ${effectiveRenderedSeva}
@@ -426,9 +426,9 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 *Daily Evaluation (175 Matrix):*
 ▪ Score: ${scoreBreakdown.percentage}% (${scoreBreakdown.totalMarks}/175 marks, Scale ${activeDevotee.scaleId})
 ▪ Category Average:
-    ├ Body: ${scoreBreakdown.bodyTotal}/75 (${scoreBreakdown.bodyAvgPct}%)
-    ├ Soul: ${scoreBreakdown.soulTotal}/75 (${scoreBreakdown.soulAvgPct}%)
-    └ Morning Program: ${scoreBreakdown.morningProgramMarks}/25`;
+    (a) Body: ${scoreBreakdown.bodyTotal}/75 (${scoreBreakdown.bodyAvgPct}%)
+    (b) Soul: ${scoreBreakdown.soulTotal}/75 (${scoreBreakdown.soulAvgPct}%)
+    (c) Morning Program: ${scoreBreakdown.morningProgramMarks}/25`;
   };
 
   const handleCopyWhatsApp = () => {
