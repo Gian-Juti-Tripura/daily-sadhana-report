@@ -185,17 +185,17 @@
 /* Sacred Falling Flowers (Pushpa Vrishti) Animation */
 @keyframes flower-fall {
   0% {
-    transform: translate3d(0, -60px, 0) rotate(0deg) scale(0.85);
+    transform: translate3d(0, -35px, 0) rotate(0deg);
     opacity: 0;
   }
-  8% {
-    opacity: 0.9;
+  12% {
+    opacity: var(--petal-opacity, 0.45);
   }
   85% {
-    opacity: 0.85;
+    opacity: var(--petal-opacity, 0.45);
   }
   100% {
-    transform: translate3d(var(--drift-x, 25px), 108vh, 0) rotate(var(--rot-end, 360deg)) scale(1.1);
+    transform: translate3d(var(--drift-x, 20px), 105vh, 0) rotate(var(--rot-end, 260deg));
     opacity: 0;
   }
 }
@@ -209,6 +209,9 @@
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   will-change: transform, opacity;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Divine Sunbeam & Radiating Light Rays (Surya Prabha) */

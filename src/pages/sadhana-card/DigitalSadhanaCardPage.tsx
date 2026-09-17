@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { 
-  Download, Award, ChevronLeft, ChevronRight, Save, ShieldCheck, 
+  Award, ChevronLeft, ChevronRight, Save, ShieldCheck, 
   RotateCcw, Table as TableIcon, Check, RefreshCw,
   Activity, Sparkles, HeartHandshake, Layers, Calendar as CalendarIcon,
   TrendingUp, Copy, Send, FileText
@@ -16,7 +16,6 @@ import { SadhanaHistoryModal } from '../../components/sadhana/SadhanaHistoryModa
 import { WeeklyReportModal, type WeeklyReportStats } from '../../components/sadhana/WeeklyReportModal';
 import { saveWeeklyCardRecord } from '../../utils/sadhanaCloudSync';
 import { toast } from 'react-hot-toast';
-import jsPDF from 'jspdf';
 
 interface DigitalSadhanaCardPageProps {
   activeDevotee: CounseleeProfile;
@@ -57,7 +56,6 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
   const [counselees] = useState<CounseleeProfile[]>(() => getRegisteredCounselees());
   const [selectedScale, setSelectedScale] = useState<1 | 2 | 3 | 4>(activeDevotee.scaleId || 2);
   const [weekOffset, setWeekOffset] = useState(0);
-  const [isExporting, setIsExporting] = useState(false);
   const [isScaleModalOpen, setIsScaleModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
@@ -363,340 +361,6 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
     window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
   };
 
-  const handleExportPdf = () => {
-    try {
-      setIsExporting(true);
-      toast.loading(language === 'bn' ? 'সাপ্তাহিক সারসংক্ষেপ PDF তৈরি হচ্ছে...' : 'Generating weekly summary PDF...');
-
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W = 210; // A4 width mm
-      const margin = 14;
-      const contentW = W - margin * 2;
-      let y = 0;
-
-      // Palette
-      const crimson = [120, 0, 30];
-      const deepEmerald = [16, 110, 72];
-      const goldAmber = [180, 115, 0];
-      const slate900 = [15, 23, 42];
-      const slate700 = [51, 65, 85];
-      const slate500 = [100, 116, 139];
-      const slate100 = [241, 245, 249];
-      const slate200 = [226, 232, 240];
-      const white = [255, 255, 255];
-
-      // ── Header Band ─────────────────────────────────────────────────
-      pdf.setFillColor(crimson[0], crimson[1], crimson[2]);
-      pdf.rect(0, 0, W, 22, 'F');
-      pdf.setTextColor(white[0], white[1], white[2]);
-      pdf.setFontSize(13);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? 'সাপ্তাহিক সাধনা সারসংক্ষেপ' : 'Weekly Sadhana Progress Summary', margin, 9.5);
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${activeDevotee.name}  •  Scale ${selectedScale}  •  ${weekDates[0].date} — ${weekDates[6].date}`, margin, 16);
-      pdf.text(`${language === 'bn' ? 'কাউন্সেলর' : 'Counselor'}: ${counselorSignature}`, W - margin, 16, { align: 'right' });
-      y = 27;
-
-      // ── SECTION 1: Weekly Sadhana Report Listing (Clean Text Cards — NO BARS) ──
-      pdf.setFillColor(slate100[0], slate100[1], slate100[2]);
-      pdf.roundedRect(margin, y, contentW, 64, 2, 2, 'F');
-      pdf.setDrawColor(slate200[0], slate200[1], slate200[2]);
-      pdf.setLineWidth(0.3);
-      pdf.roundedRect(margin, y, contentW, 64, 2, 2, 'S');
-
-      // Title header
-      pdf.setFillColor(crimson[0], crimson[1], crimson[2]);
-      pdf.roundedRect(margin, y, contentW, 7, 2, 2, 'F');
-      pdf.rect(margin, y + 4, contentW, 3, 'F');
-      pdf.setTextColor(white[0], white[1], white[2]);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(8.5);
-      pdf.text(language === 'bn' ? '১. সাপ্তাহিক সাধনা প্রতিবেদন (সারসংক্ষেপ তালিকা)' : '1. Weekly Sadhana Report (Summary Listing)', margin + 4, y + 5);
-
-      y += 12;
-
-      // 6 metrics formatted in 2 clean columns
-      const col1X = margin + 6;
-      const col2X = margin + contentW / 2 + 4;
-      const rowGap = 8;
-
-      const pct = columnCalculations.overallPercentage;
-      const grade = pct >= 85 ? 'A+' : pct >= 70 ? 'A' : pct >= 55 ? 'B' : 'C';
-
-      // Row 1: Material Study & Śrīla Prabhupāda Study
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(8);
-      pdf.setTextColor(slate900[0], slate900[1], slate900[2]);
-      pdf.text(language === 'bn' ? '• প্রাতিষ্ঠানিক পড়াশোনা:' : '• Material Study:', col1X, y);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${weeklyStats.matHours} hours`, col1X + 42, y);
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? '• শ্রীল প্রভুপাদের গ্রন্থ:' : '• Prabhupāda Study:', col2X, y);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${weeklyStats.spHours} hours (${weeklyStats.spBookRef})`, col2X + 40, y);
-
-      y += rowGap;
-
-      // Row 2: Body % & Soul %
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? '• দেহ (Body):' : '• Body Score:', col1X, y);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${weeklyStats.bodyPct}%  (${columnCalculations.bodyTotalMarks}/225 Marks)`, col1X + 42, y);
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? '• আত্মা (Soul):' : '• Soul Score:', col2X, y);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${weeklyStats.soulPct}%  (${columnCalculations.soulTotalMarks}/225 Marks)`, col2X + 40, y);
-
-      y += rowGap;
-
-      // Row 3: Lecture Hearing & Sloka Memorization
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? '• প্রবচন শ্রবণ:' : '• Lecture Hearing:', col1X, y);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${weeklyStats.lectHours} hours`, col1X + 42, y);
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? '• শ্লোক মুখস্থকরণ:' : '• Śloka Memorization:', col2X, y);
-      pdf.setFont('helvetica', 'normal');
-      const slokaShort = weeklyStats.slokaText.length > 38 ? weeklyStats.slokaText.substring(0, 36) + '...' : weeklyStats.slokaText;
-      pdf.text(slokaShort, col2X + 40, y);
-
-      y += rowGap + 2;
-
-      // Score divider line
-      pdf.setDrawColor(slate200[0], slate200[1], slate200[2]);
-      pdf.line(margin + 4, y - 2, margin + contentW - 4, y - 2);
-
-      // Overall Score strip (Listing text format)
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(8.5);
-      pdf.setTextColor(deepEmerald[0], deepEmerald[1], deepEmerald[2]);
-      pdf.text(
-        language === 'bn' 
-          ? `সাপ্তাহিক মোট অর্জন (১৭৫ ম্যাট্রিক্স):  ${pct}%  (${columnCalculations.totalScoredMarks}/${columnCalculations.maxWeeklyScoredMarks} নম্বর)  •  গ্রেড: ${grade}`
-          : `Overall Weekly 175-Score:  ${pct}%  (${columnCalculations.totalScoredMarks}/${columnCalculations.maxWeeklyScoredMarks} Marks)  •  Grade: ${grade}`,
-        col1X, y + 3
-      );
-
-      y += 18;
-
-      // ── SECTION 2: 7-Day Sadhana Progress Listing Table (NO BARS!) ───
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(slate900[0], slate900[1], slate900[2]);
-      pdf.text(language === 'bn' ? '২. দৈনিক অগ্রগতি তালিকা (শনি — শুক্র)' : '2. Daily Progress Listing (Sat — Fri)', margin, y);
-      y += 4;
-
-      // Table Column Definitions
-      const cols = [
-        { label: language === 'bn' ? 'দিন / তারিখ' : 'Day / Date', w: 26, align: 'left' },
-        { label: language === 'bn' ? 'শয়ন' : 'Sleep', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'জাগরণ' : 'Wake', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'দিবানিদ্রা' : 'Rest', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'জপ' : 'Japa', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'গ্রন্থ' : 'Book', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'শ্রবণ' : 'Hear', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'ক্লাস' : 'Class', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'কার্ড' : 'Card', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'ভজন' : 'Bhajan', w: 14, align: 'center' },
-        { label: language === 'bn' ? 'মোট' : 'Total', w: 18, align: 'center' },
-        { label: language === 'bn' ? 'অবস্থা' : 'Status', w: 18, align: 'center' }
-      ];
-
-      // Table Header Row
-      pdf.setFillColor(crimson[0], crimson[1], crimson[2]);
-      pdf.rect(margin, y, contentW, 6.5, 'F');
-      pdf.setTextColor(white[0], white[1], white[2]);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(6.5);
-
-      let curX = margin;
-      cols.forEach(c => {
-        if (c.align === 'center') {
-          pdf.text(c.label, curX + c.w / 2, y + 4.5, { align: 'center' });
-        } else {
-          pdf.text(c.label, curX + 2, y + 4.5);
-        }
-        curX += c.w;
-      });
-      y += 6.5;
-
-      // Table 7 Data Rows
-      const rowHeight = 8;
-      weekDates.forEach((d, idx) => {
-        const row = matrixEntries[d.key];
-        const dayTotalRaw = ['toBed','wakeUp','dayRest','japa','spBooks','hearing','morningClass','sadhanaCard','bhajanGayatri']
-          .reduce((s, f) => s + parseCellMark((row as unknown as Record<string, string>)?.[f] || '0'), 0);
-        const hasData = dayTotalRaw > 0;
-        const dayPct = Math.min(100, Math.round((dayTotalRaw / (9 * 25)) * 100));
-
-        // Alternating background
-        pdf.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
-        pdf.rect(margin, y, contentW, rowHeight, 'F');
-        pdf.setDrawColor(slate200[0], slate200[1], slate200[2]);
-        pdf.setLineWidth(0.2);
-        pdf.rect(margin, y, contentW, rowHeight, 'S');
-
-        // Day label
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(7);
-        pdf.setTextColor(slate900[0], slate900[1], slate900[2]);
-        const dayNameStr = language === 'bn' ? d.nameBn : d.nameEn;
-        pdf.text(`${dayNameStr} (${d.date})`, margin + 2, y + 5.2);
-
-        // Sub-column values (Text listing)
-        const cellValues = [
-          row?.toBed || '-',
-          row?.wakeUp || '-',
-          row?.dayRest || '-',
-          row?.japa || '-',
-          row?.spBooks || '-',
-          row?.hearing || '-',
-          row?.morningClass || '-',
-          row?.sadhanaCard || '-',
-          row?.bhajanGayatri || '-'
-        ];
-
-        let cellX = margin + cols[0].w;
-        cellValues.forEach((val, vi) => {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(6.5);
-          pdf.setTextColor(slate700[0], slate700[1], slate700[2]);
-          const colW = cols[vi + 1].w;
-          pdf.text(String(val), cellX + colW / 2, y + 5.2, { align: 'center' });
-          cellX += colW;
-        });
-
-        // Day Total
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(7);
-        if (hasData) {
-          const scColor = dayPct >= 80 ? deepEmerald : dayPct >= 65 ? goldAmber : crimson;
-          pdf.setTextColor(scColor[0], scColor[1], scColor[2]);
-          pdf.text(`${dayTotalRaw} (${dayPct}%)`, cellX + cols[10].w / 2, y + 5.2, { align: 'center' });
-        } else {
-          pdf.setTextColor(slate500[0], slate500[1], slate500[2]);
-          pdf.text('—', cellX + cols[10].w / 2, y + 5.2, { align: 'center' });
-        }
-        cellX += cols[10].w;
-
-        // Status
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(6.5);
-        if (hasData) {
-          pdf.setTextColor(deepEmerald[0], deepEmerald[1], deepEmerald[2]);
-          pdf.text(language === 'bn' ? 'সম্পন্ন ✓' : 'Done ✓', cellX + cols[11].w / 2, y + 5.2, { align: 'center' });
-        } else {
-          pdf.setTextColor(slate500[0], slate500[1], slate500[2]);
-          pdf.text(language === 'bn' ? 'বাকি' : 'Pending', cellX + cols[11].w / 2, y + 5.2, { align: 'center' });
-        }
-
-        y += rowHeight;
-      });
-
-      // Weekly Column Totals Footer Row
-      pdf.setFillColor(slate100[0], slate100[1], slate100[2]);
-      pdf.rect(margin, y, contentW, rowHeight, 'F');
-      pdf.setDrawColor(slate200[0], slate200[1], slate200[2]);
-      pdf.setLineWidth(0.2);
-      pdf.rect(margin, y, contentW, rowHeight, 'S');
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(7);
-      pdf.setTextColor(crimson[0], crimson[1], crimson[2]);
-      pdf.text(language === 'bn' ? 'সাপ্তাহিক যোগফল' : 'Weekly Total', margin + 2, y + 5.2);
-
-      const colTotals = [
-        columnCalculations.toBed.total,
-        columnCalculations.wakeUp.total,
-        columnCalculations.dayRest.total,
-        columnCalculations.japa.total,
-        columnCalculations.spBooks.total,
-        columnCalculations.hearing.total,
-        columnCalculations.morningClass.total,
-        columnCalculations.sadhanaCard.total,
-        columnCalculations.bhajanGayatri.total
-      ];
-
-      let totX = margin + cols[0].w;
-      colTotals.forEach((tot, ti) => {
-        const colW = cols[ti + 1].w;
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(6.5);
-        pdf.setTextColor(slate900[0], slate900[1], slate900[2]);
-        pdf.text(String(tot), totX + colW / 2, y + 5.2, { align: 'center' });
-        totX += colW;
-      });
-
-      pdf.setTextColor(deepEmerald[0], deepEmerald[1], deepEmerald[2]);
-      pdf.text(`${columnCalculations.totalScoredMarks}`, totX + cols[10].w / 2, y + 5.2, { align: 'center' });
-      totX += cols[10].w;
-      pdf.text(`${pct}%`, totX + cols[11].w / 2, y + 5.2, { align: 'center' });
-
-      y += rowHeight + 8;
-
-      // ── SECTION 3: Counselor Remarks ─────────────────────────────────
-      pdf.setFillColor(slate100[0], slate100[1], slate100[2]);
-      pdf.roundedRect(margin, y, contentW, 26, 2, 2, 'F');
-      pdf.setDrawColor(slate200[0], slate200[1], slate200[2]);
-      pdf.setLineWidth(0.3);
-      pdf.roundedRect(margin, y, contentW, 26, 2, 2, 'S');
-
-      pdf.setFillColor(crimson[0], crimson[1], crimson[2]);
-      pdf.roundedRect(margin, y, contentW, 6, 2, 2, 'F');
-      pdf.rect(margin, y + 3, contentW, 3, 'F');
-      pdf.setTextColor(white[0], white[1], white[2]);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(7.5);
-      pdf.text(language === 'bn' ? 'কাউন্সেলরের মূল্যায়ন ও মন্তব্য' : "Counselor's Review & Guidance", margin + 4, y + 4.5);
-
-      pdf.setTextColor(slate700[0], slate700[1], slate700[2]);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(7);
-      pdf.text(language === 'bn' ? 'রোগ নির্ণয়:' : 'Diagnosis:', margin + 4, y + 11.5);
-      pdf.setFont('helvetica', 'normal');
-      const diagLines = pdf.splitTextToSize(counselorDiagnosis, contentW - 8);
-      pdf.text(diagLines.slice(0, 2), margin + 4, y + 15.5);
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(language === 'bn' ? 'পরামর্শ:' : 'Advice:', margin + 4, y + 21);
-      pdf.setFont('helvetica', 'normal');
-      const adviceLines = pdf.splitTextToSize(counselorAdvice, contentW - 40);
-      pdf.text(adviceLines.slice(0, 1), margin + 4, y + 25);
-
-      // Signature
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(7.5);
-      pdf.setTextColor(crimson[0], crimson[1], crimson[2]);
-      pdf.text(counselorSignature, W - margin - 4, y + 23, { align: 'right' });
-      pdf.setDrawColor(crimson[0], crimson[1], crimson[2]);
-      pdf.setLineWidth(0.3);
-      pdf.line(W - margin - 35, y + 24, W - margin - 4, y + 24);
-
-      // ── Footer ──────────────────────────────────────────────────────
-      pdf.setFillColor(crimson[0], crimson[1], crimson[2]);
-      pdf.rect(0, 290, W, 7, 'F');
-      pdf.setTextColor(white[0], white[1], white[2]);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(6.5);
-      pdf.text('VOICE Hub — Advaita Acharya Youth Cultural Center', margin, 294.5);
-      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, W - margin, 294.5, { align: 'right' });
-
-      pdf.save(`Weekly_Sadhana_Summary_${activeDevotee.name.replace(/\s+/g, '_')}_${weekDates[0].date.replace(/\//g, '-')}.pdf`);
-      toast.dismiss();
-      toast.success(language === 'bn' ? 'সাপ্তাহিক সারসংক্ষেপ PDF ডাউনলোড সম্পন্ন!' : 'Weekly summary PDF downloaded!');
-    } catch (e) {
-      toast.dismiss();
-      toast.error('Failed to export PDF');
-      console.error(e);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   const handleSaveCard = () => {
     const cardData: WeeklySadhanaCard = {
       id: `card_${activeDevotee.id}_week_${weekDates[0].date.replace(/\//g, '-')}`,
@@ -996,8 +660,8 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
         className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 sm:space-y-5 overflow-hidden"
       >
         
-        {/* Printable Card Header: Rendered only during PDF export or print */}
-        <div className={`${isExporting ? 'flex' : 'hidden'} print:flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs`}>
+        {/* Printable Card Header: Rendered only during print */}
+        <div className="hidden print:flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs">
           
           <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap min-w-0">
             {/* Date */}
@@ -1598,34 +1262,22 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
           <button
             type="button"
             onClick={handleCopyWeeklyReport}
-            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
             title={language === 'bn' ? 'সাপ্তাহিক রিপোর্ট কপি' : 'Copy Weekly Report'}
           >
-            {copiedWeekly ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
-            <span className="hidden sm:inline">{copiedWeekly ? (language === 'bn' ? 'কপি!' : 'Copied!') : (language === 'bn' ? 'কপি' : 'Copy')}</span>
+            {copiedWeekly ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500" />}
+            <span>{copiedWeekly ? (language === 'bn' ? 'কপি!' : 'Copied!') : (language === 'bn' ? 'কপি' : 'Copy')}</span>
           </button>
 
           {/* WhatsApp Send */}
           <button
             type="button"
             onClick={handleShareWeeklyReportWhatsApp}
-            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe59] text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs shrink-0 cursor-pointer"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe59] text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs shrink-0 cursor-pointer"
             title={language === 'bn' ? 'হোয়াটসঅ্যাপ পাঠান' : 'Send WhatsApp'}
           >
-            <Send className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">WhatsApp</span>
-          </button>
-
-          {/* Download PDF button */}
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
-            title="Download PDF"
-          >
-            <Download className="w-3.5 h-3.5 shrink-0" />
-            <span>{isExporting ? '...' : 'PDF'}</span>
+            <Send className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span>WhatsApp</span>
           </button>
         </div>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { 
-  Copy, Check, Download, Sparkles, Moon, Sun, 
+  Copy, Check, Sparkles, Moon, Sun, 
   BookOpen, Clock, HeartHandshake, ShieldCheck, 
   Calendar, MessageCircle, RefreshCw
 } from 'lucide-react';
@@ -11,7 +11,6 @@ import { getRegisteredCounselees, PRIMARY_COUNSELOR } from '../../data/counselee
 import type { CounseleeProfile, DailySadhanaReport, StayingLocation } from '../../types/sadhana';
 import { calculateDailyReportScore, syncDailyReportToWeeklyMatrix } from '../../utils/sadhanaScoringEngine';
 import { toast } from 'react-hot-toast';
-import jsPDF from 'jspdf';
 import { CounselorSelectorBar } from '../../components/shared/CounselorSelectorBar';
 import { YesNoToggle } from '../../components/shared/YesNoToggle';
 import { SadhanaHistoryModal } from '../../components/sadhana/SadhanaHistoryModal';
@@ -137,7 +136,6 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
   const [socialMediaMinutes, setSocialMediaMinutes] = useState(30);
 
   // UI state
-  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
@@ -449,134 +447,6 @@ Staying at: *${stayingAt}*
       );
     } catch (e) {
       toast.error('Error saving report');
-    }
-  };
-
-  const handleDownloadPdf = () => {
-    try {
-      setIsExportingPdf(true);
-      const toastId = toast.loading(language === 'bn' ? 'পিডিএফ তৈরি হচ্ছে...' : 'Generating PDF...');
-
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const W = 210;
-      const margin = 14;
-      const contentW = W - margin * 2;
-      let y = 0;
-
-      const crimson: [number,number,number] = [120, 0, 30];
-      const slate900: [number,number,number] = [15, 23, 42];
-      const slate600: [number,number,number] = [71, 85, 105];
-      const slate200: [number,number,number] = [226, 232, 240];
-      const white: [number,number,number] = [255, 255, 255];
-      const gold: [number,number,number] = [180, 115, 0];
-      const green: [number,number,number] = [16, 110, 72];
-
-      // Header band
-      pdf.setFillColor(...crimson);
-      pdf.rect(0, 0, W, 22, 'F');
-      pdf.setTextColor(...white);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(13);
-      pdf.text(language === 'bn' ? 'দৈনিক সাধনা রিপোর্ট' : 'Daily Sadhana Report', margin, 9.5);
-      pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${activeDevotee.name}  •  Scale ${activeDevotee.scaleId}  •  ${reportDate}  •  ${stayingAt}`, margin, 16);
-      y = 28;
-
-      // Helpers
-      const pLine = (txt: string, indent: number, bold = false, color: [number,number,number] = slate900) => {
-        pdf.setFont('helvetica', bold ? 'bold' : 'normal');
-        pdf.setFontSize(9);
-        pdf.setTextColor(...color);
-        pdf.text(txt, margin + indent, y);
-        y += 5.8;
-      };
-      const divider = () => {
-        pdf.setDrawColor(...slate200);
-        pdf.setLineWidth(0.3);
-        pdf.line(margin, y - 1, margin + contentW, y - 1);
-        y += 2;
-      };
-      const yn = (v: boolean) => language === 'bn' ? (v ? 'হ্যাঁ' : 'না') : (v ? 'Yes' : 'No');
-
-      const bookNameEn = scriptureBook === 'custom' ? effectiveBookTitle : (selectedBookObj?.titleEn || effectiveBookTitle);
-      const bookNameBn = scriptureBook === 'custom' ? (customBookName.trim() || 'বৈষ্ণব সাহিত্য') : (selectedBookObj?.titleBn || effectiveBookTitle);
-      const bookName = language === 'bn' ? bookNameBn : bookNameEn;
-      const chapterStr = scriptureChapterPage ? ` (${language === 'bn' ? formatChapterBn(scriptureChapterPage) : scriptureChapterPage})` : '';
-
-      // BODY
-      pLine(language === 'bn' ? 'দেহ' : 'Body', 0, true, crimson);
-      pLine(`${language === 'bn' ? '├ শয়ন:' : '├ Went to bed:'} ${language === 'bn' ? toBnNum(wentToBed) : wentToBed}`, 4);
-      pLine(`${language === 'bn' ? '├ শয্যা ত্যাগ:' : '├ Got up:'} ${language === 'bn' ? toBnNum(gotUp) : gotUp}`, 4);
-      pLine(`${language === 'bn' ? '└ দিবানিদ্রা:' : '└ Day rest:'} ${language === 'bn' ? toBnNum(dayRestMinutes) + ' মিনিট' : dayRestMinutes + ' min'}`, 4);
-      y += 1; divider();
-
-      // SOUL
-      pLine(language === 'bn' ? 'আত্মা' : 'Soul', 0, true, crimson);
-      pLine(`${language === 'bn' ? '├ জপ:' : '├ Japa:'} ${language === 'bn' ? toBnNum(japaRounds) + ' মালা (সমাপ্তি: ' + toBnNum(japaCompletionTime) + ')' : japaRounds + ' rounds (Completed: ' + japaCompletionTime + ')'}`, 4);
-      pLine(`${language === 'bn' ? '├ শাস্ত্র অধ্যয়ন:' : '├ Scripture study:'} ${language === 'bn' ? toBnNum(scriptureStudyMinutes) + ' মিনিট' : scriptureStudyMinutes + ' min'}`, 4);
-      pLine(`│   ├ ${bookName}${chapterStr}`, 8);
-      pLine(`│   └ ${language === 'bn' ? 'নোট:' : 'Notes:'} ${yn(scriptureNotes)}`, 8);
-      pLine(`${language === 'bn' ? '└ প্রবচন শ্রবণ:' : '└ Lecture hearing:'} ${language === 'bn' ? toBnNum(totalHearingMinutes) + ' মিনিট' : totalHearingMinutes + ' min'}`, 4);
-      pLine(`    ├ ${language === 'bn' ? 'প্রভুপাদ:' : 'Srila Prabhupada:'} ${language === 'bn' ? toBnNum(lectureSpMinutes) + ' মি.' : lectureSpMinutes + ' min'}`, 8);
-      pLine(`    ├ ${language === 'bn' ? 'গুরুমহারাজ:' : 'Gurumaharaj:'} ${language === 'bn' ? toBnNum(lectureGuruMinutes) + ' মি.' : lectureGuruMinutes + ' min'}`, 8);
-      pLine(`    └ ${language === 'bn' ? 'অন্যান্য:' : 'Others:'} ${language === 'bn' ? toBnNum(lectureOtherMinutes) + ' মি.' : lectureOtherMinutes + ' min'}`, 8);
-      y += 1; divider();
-
-      // SEVA & ACADEMIC
-      pLine(language === 'bn' ? 'সেবা ও পড়াশোনা' : 'Seva & Academic Study', 0, true, crimson);
-      pLine(`${language === 'bn' ? '├ সেবা:' : '├ Seva:'} ${language === 'bn' ? effectiveRenderedSevaBn : effectiveRenderedSeva}`, 4);
-      pLine(`${language === 'bn' ? '└ প্রাতিষ্ঠানিক পড়াশোনা:' : '└ Academic study:'} ${language === 'bn' ? toBnNum(academicStudyHours) + ' ঘন্টা' : academicStudyHours + ' hrs'}`, 4);
-      y += 1; divider();
-
-      // MORNING PROGRAM
-      pLine(language === 'bn' ? 'মর্নিং প্রোগ্রাম' : 'Morning Program', 0, true, crimson);
-      pLine(`${language === 'bn' ? '├ মঙ্গল আরতি:' : '├ Mangalarati:'} ${yn(mangalarati)}`, 4);
-      pLine(`${language === 'bn' ? '├ নৃসিংহ আরতি:' : '├ Nrsimharati:'} ${yn(nrsimharati)}`, 4);
-      pLine(`${language === 'bn' ? '├ তুলসী আরতি ও পরিক্রমা:' : '├ Tulasi arati & parikrama:'} ${yn(tulasiArati)}`, 4);
-      pLine(`${language === 'bn' ? '├ বৃন্দাদেবীকে জলদান:' : '├ Watering Vrinda devi:'} ${yn(wateringVrinda)}`, 4);
-      pLine(`${language === 'bn' ? '└ শিক্ষাষ্টক ও দশবিধ নামাপরাধ:' : '└ Siksastakam & 10 offenses:'} ${yn(siksastakamAndOffenses)}`, 4);
-      y += 1; divider();
-
-      // ADDITIONAL
-      pLine(language === 'bn' ? 'অন্যান্য' : 'Additional', 0, true, crimson);
-      pLine(`${language === 'bn' ? '├ শ্লোক মুখস্থ:' : '├ Sloka memorizing:'} ${yn(slokaMemorized)}`, 4);
-      pLine(`${language === 'bn' ? '├ ভজন / গায়ত্রী:' : '├ Bhajan / Gayatri:'} ${yn(bhajanGayatriCompleted)}`, 4);
-      pLine(`${language === 'bn' ? '└ স্ক্রিন সময়:' : '└ Screen time:'} ${language === 'bn' ? toBnNum(socialMediaMinutes) + ' মিনিট' : socialMediaMinutes + ' min'}`, 4);
-      y += 1; divider();
-
-      // DAILY EVALUATION
-      pLine(language === 'bn' ? 'দৈনিক মূল্যায়ন (১৭৫ ম্যাট্রিক্স)' : 'Daily Evaluation (175 Matrix)', 0, true, crimson);
-      pLine(
-        language === 'bn'
-          ? `  স্কোর: ${toBnNum(scoreBreakdown.percentage)}% (${toBnNum(scoreBreakdown.totalMarks)}/১৭৫) — স্কেল ${toBnNum(activeDevotee.scaleId)}`
-          : `  Score: ${scoreBreakdown.percentage}% (${scoreBreakdown.totalMarks}/175) — Scale ${activeDevotee.scaleId}`,
-        4, true, gold
-      );
-      pLine(`${language === 'bn' ? '├ দেহ:' : '├ Body:'} ${scoreBreakdown.bodyTotal}/${language === 'bn' ? '৭৫' : '75'} (${scoreBreakdown.bodyAvgPct}%)`, 4, false, slate600);
-      pLine(`${language === 'bn' ? '├ আত্মা:' : '├ Soul:'} ${scoreBreakdown.soulTotal}/${language === 'bn' ? '৭৫' : '75'} (${scoreBreakdown.soulAvgPct}%)`, 4, false, slate600);
-      pLine(`${language === 'bn' ? '└ মর্নিং প্রোগ্রাম:' : '└ Morning Program:'} ${scoreBreakdown.morningProgramMarks}/${language === 'bn' ? '২৫' : '25'}`, 4, false, green);
-
-      // Footer
-      y += 4;
-      pdf.setDrawColor(...slate200);
-      pdf.setLineWidth(0.4);
-      pdf.line(margin, y, margin + contentW, y);
-      y += 5;
-      pdf.setFont('helvetica', 'italic');
-      pdf.setFontSize(7.5);
-      pdf.setTextColor(...slate600);
-      pdf.text('ISKCON YOUTH FORUM (IYF) • ADVAITA VOICE — "Simple Living, High Thinking"', margin, y);
-
-      pdf.save(`Daily_Sadhana_Report_${activeDevotee.name.replace(/\s+/g, '_')}_${reportDate.replace(/\//g, '-')}.pdf`);
-      toast.dismiss(toastId);
-      toast.success(language === 'bn' ? 'পিডিএফ ডাউনলোড সম্পন্ন!' : 'PDF downloaded successfully!');
-    } catch (err) {
-      toast.dismiss();
-      toast.error('Failed to export PDF');
-      console.error(err);
-    } finally {
-      setIsExportingPdf(false);
     }
   };
 
@@ -1301,54 +1171,33 @@ Staying at: *${stayingAt}*
           </div>
         </div>
 
-        {/* Action buttons in single compact row */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-end min-w-0">
-
-          <button
-            type="button"
-            onClick={() => setIsHistoryModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-sm shrink-0 cursor-pointer"
-            title={language === 'bn' ? 'রিপোর্ট ইতিহাস ও ক্যালেন্ডার' : 'Report History & Calendar'}
-          >
-            <Calendar className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-            <span className="hidden sm:inline">{language === 'bn' ? 'ইতিহাস' : 'History'}</span>
-          </button>
-
+        {/* Action buttons in single compact row — minimal & proportional */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick={handleCopyWhatsApp}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-sm shrink-0"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs shrink-0 cursor-pointer"
             title={language === 'bn' ? 'টেক্সট কপি' : 'Copy WhatsApp Report'}
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-green-600 shrink-0" /> : <Copy className="w-3.5 h-3.5 shrink-0" />}
+            {copied ? <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-600 shrink-0" /> : <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />}
             <span>{copied ? (language === 'bn' ? 'কপি!' : 'Copied!') : (language === 'bn' ? 'কপি' : 'Copy')}</span>
           </button>
 
           <button
             onClick={handleShareWhatsApp}
-            className="px-2.5 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-sm shadow-green-600/30 shrink-0"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe59] text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs shrink-0 cursor-pointer"
             title="Share to WhatsApp"
           >
-            <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+            <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
             <span>WhatsApp</span>
           </button>
 
           <button
-            onClick={handleDownloadPdf}
-            disabled={isExportingPdf}
-            className={`px-2.5 py-1.5 rounded-lg ${styles.btnPrimary} text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all disabled:opacity-50 shrink-0`}
-            title="Download PDF"
-          >
-            <Download className="w-3.5 h-3.5 shrink-0" />
-            <span>{isExportingPdf ? '...' : 'PDF'}</span>
-          </button>
-
-          <button
             onClick={handleSaveReport}
-            className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-sm shadow-amber-500/30 shrink-0"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs shadow-amber-500/20 shrink-0 cursor-pointer"
             title="Manual Save & Sync"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{language === 'bn' ? 'সংরক্ষণ' : 'Save'}</span>
+            <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+            <span>{language === 'bn' ? 'সংরক্ষণ' : 'Save'}</span>
           </button>
         </div>
       </div>

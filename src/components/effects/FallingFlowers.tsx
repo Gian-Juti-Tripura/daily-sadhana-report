@@ -7,28 +7,22 @@ interface Petal {
   left: number;
   duration: number;
   delay: number;
-  size: number;
+  scale: number;
   driftX: number;
   rotEnd: number;
   opacity: number;
 }
 
+// Curated delicate petals (soft lotus, divine blossoms, sparkles & tulasi leaves)
 const FLOWER_ICONS = [
-  '🌸', // Pink Lotus / Cherry Blossom
+  '🌸', // Delicate Lotus Petal
   '🪷', // Sacred Lotus
+  '✨', // Divine Sparkle
   '🌼', // Jasmine Blossom
-  '🏵️', // Golden Marigold
-  '🌺', // Hibiscus
-  '💮', // White Jasmine
-  '🌸', // Lotus Petal
-  '🪷', // Blue/Pink Lotus
-  '✨', // Golden Sparkle
-  '🌿', // Sacred Tulasi Leaf
-  '🍃', // Fluttering Green Leaf
-  '⭐', // Celestial Star
-  '🌸', // Lotus
-  '🌼', // Yellow Blossom
-  '🏵️'  // Saffron Kadamba
+  '🍃', // Gentle Leaf
+  '💮', // White Parijata
+  '🌸', // Pink Lotus
+  '🪷'  // Blue/Pink Lotus
 ];
 
 export const FallingFlowers: React.FC = () => {
@@ -47,23 +41,18 @@ export const FallingFlowers: React.FC = () => {
 
   const petals: Petal[] = useMemo(() => {
     if (!enabled) return [];
-    // 32 delicate, small floating flower petals & sacred elements
-    return Array.from({ length: 32 }, (_, i) => {
+    // 16 gentle, micro-sized floating petals (unobtrusive and refined)
+    return Array.from({ length: 16 }, (_, i) => {
       const flower = FLOWER_ICONS[i % FLOWER_ICONS.length];
-      // Evenly distribute across screen width (1% to 98%)
-      const left = ((i * 3.1 + (i % 5) * 4.2) % 96) + 2;
-      // Gentle, floating fall durations (8s - 16s)
-      const duration = 8.5 + ((i * 3) % 7) * 1.2;
-      // Staggered smooth continuous delays (0s - 14s)
-      const delay = ((i * 0.55) % 13.5);
-      // Delicate smaller sizes: 8px to 13px
-      const size = 8 + (i % 4) * 1.5;
-      // Subtle natural breeze drift (-20px to +25px)
-      const driftX = -20 + (i % 5) * 9;
-      // Smooth spinning rotations
-      const rotEnd = 140 + (i % 5) * 70;
-      // Soft divine transparency
-      const opacity = 0.32 + (i % 4) * 0.10;
+      const left = ((i * 6.2 + (i % 3) * 4.7) % 94) + 3;
+      const duration = 9.0 + ((i * 3) % 5) * 1.5;
+      const delay = ((i * 0.9) % 11.0);
+      // Micro-scaled: 0.45 to 0.65 of standard emoji size
+      const scale = 0.45 + (i % 4) * 0.06;
+      const driftX = -18 + (i % 5) * 9;
+      const rotEnd = 120 + (i % 4) * 60;
+      // Soft ambient opacity
+      const opacity = 0.30 + (i % 3) * 0.08;
 
       return {
         id: i,
@@ -71,7 +60,7 @@ export const FallingFlowers: React.FC = () => {
         left,
         duration,
         delay,
-        size,
+        scale,
         driftX,
         rotEnd,
         opacity
@@ -84,23 +73,33 @@ export const FallingFlowers: React.FC = () => {
   return (
     <div 
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none z-20 overflow-hidden select-none"
+      className="fixed inset-0 pointer-events-none z-10 overflow-hidden select-none"
     >
       {petals.map((p) => (
         <div
           key={p.id}
-          className="flower-petal drop-shadow-xs"
+          className="flower-petal"
           style={{
             left: `${p.left}%`,
-            fontSize: `${p.size}px`,
-            opacity: p.opacity,
-            animationDuration: `${p.duration}s`,
-            animationDelay: `${p.delay}s`,
+            fontSize: '14px',
+            lineHeight: '1',
+            ['--petal-opacity' as string]: p.opacity,
+            ['--scale' as string]: p.scale,
             ['--drift-x' as string]: `${p.driftX}px`,
             ['--rot-end' as string]: `${p.rotEnd}deg`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
           }}
         >
-          {p.flower}
+          <span 
+            style={{ 
+              display: 'inline-block',
+              transform: `scale(${p.scale})`,
+              transformOrigin: 'center center'
+            }}
+          >
+            {p.flower}
+          </span>
         </div>
       ))}
     </div>
