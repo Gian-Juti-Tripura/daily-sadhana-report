@@ -1273,11 +1273,12 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
           <button
             type="button"
             onClick={handleShareWeeklyReportWhatsApp}
-            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1ebe59] text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow-xs shrink-0 cursor-pointer"
+            className="px-2 py-1 rounded-lg bg-[#25D366] hover:bg-[#1ebe59] text-white text-[11px] font-bold flex items-center gap-1 transition-all shadow-xs shrink-0 cursor-pointer"
             title={language === 'bn' ? 'হোয়াটসঅ্যাপ পাঠান' : 'Send WhatsApp'}
           >
-            <Send className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            <span>WhatsApp</span>
+            <Send className="w-3.5 h-3.5" />
+            <span className="xs:hidden">WA</span>
+            <span className="hidden xs:inline">WhatsApp</span>
           </button>
         </div>
 
