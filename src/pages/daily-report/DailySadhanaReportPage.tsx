@@ -322,13 +322,8 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
         ? (customBookName.trim() || 'বৈষ্ণব সাহিত্য')
         : (selectedBookObj?.titleBn || effectiveBookTitle);
 
-      let formattedBookBn = bookNameBn;
-      if (selectedBookObj?.semesterLabelBn) {
-        formattedBookBn += ` (${selectedBookObj.semesterLabelBn})`;
-      }
-      if (scriptureChapterPage) {
-        formattedBookBn += `, ${formatChapterBn(scriptureChapterPage)}`;
-      }
+      const chapterBn = scriptureChapterPage ? ` (${formatChapterBn(scriptureChapterPage)})` : '';
+      const formattedBookBn = `${bookNameBn}${chapterBn}`;
 
       const stayingBn = STAYING_BN_MAP[stayingAt] || stayingAt;
 
@@ -380,13 +375,8 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
       ? effectiveBookTitle
       : (selectedBookObj?.titleEn || effectiveBookTitle);
 
-    let formattedBookEn = bookNameEn;
-    if (selectedBookObj?.semesterLabelEn) {
-      formattedBookEn += ` (${selectedBookObj.semesterLabelEn})`;
-    }
-    if (scriptureChapterPage) {
-      formattedBookEn += `, ${scriptureChapterPage}`;
-    }
+    const chapterEn = scriptureChapterPage ? ` (${scriptureChapterPage})` : '';
+    const formattedBookEn = `${bookNameEn}${chapterEn}`;
 
     return `*Daily Sadhana Report — ${reportDate}*
 *${activeDevotee.name}*
