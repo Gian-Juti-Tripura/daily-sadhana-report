@@ -1190,8 +1190,8 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             title="Share to WhatsApp"
           >
             <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="xs:hidden">WA</span>
-            <span className="hidden xs:inline">WhatsApp</span>
+            <span className="sm:hidden">WA</span>
+            <span className="hidden sm:inline">WhatsApp</span>
           </button>
 
           <button
@@ -1200,7 +1200,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             title={language === 'bn' ? 'সংরক্ষণ ও সিঙ্ক' : 'Manual Save & Sync'}
           >
             <RefreshCw className="w-3.5 h-3.5 shrink-0" />
-            <span className="hidden xs:inline">{language === 'bn' ? 'সংরক্ষণ' : 'Save'}</span>
+            <span className="hidden sm:inline">{language === 'bn' ? 'সংরক্ষণ' : 'Save'}</span>
           </button>
         </div>
       </div>

@@ -50,13 +50,16 @@ export const CounselorFooter: React.FC<CounselorFooterProps> = ({
     <footer className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 mt-6 text-white shadow-inner">
       {/* Mini Mahamantra line */}
       <div className="border-b border-white/15 py-1 px-3 text-center bg-black/10">
-        <p className="text-[10px] xs:text-[11px] font-bold tracking-wide drop-shadow-sm truncate">
-          🌸{' '}
-          {language === 'bn'
-            ? 'হরে কৃষ্ণ হরে কৃষ্ণ কৃষ্ণ কৃষ্ণ হরে হরে । হরে রাম হরে রাম রাম রাম হরে হরে ॥'
-            : 'Hare Krishna Hare Krishna Krishna Krishna Hare Hare | Hare Rama Hare Rama Rama Rama Hare Hare ||'}
-          {' '}🌸
-        </p>
+        {language === 'bn' ? (
+          <p className="text-[10px] xs:text-[11px] font-bold tracking-wide drop-shadow-sm truncate">
+            🌸 হরে কৃষ্ণ হরে কৃষ্ণ কৃষ্ণ কৃষ্ণ হরে হরে । হরে রাম হরে রাম রাম রাম হরে হরে ॥ 🌸
+          </p>
+        ) : (
+          <div className="text-[10px] xs:text-[11px] font-bold tracking-wide drop-shadow-sm leading-tight flex flex-col items-center justify-center">
+            <span>🌸 Hare Krishna Hare Krishna Krishna Krishna Hare Hare</span>
+            <span className="mt-0.5">Hare Rama Hare Rama Rama Rama Hare Hare 🌸</span>
+          </div>
+        )}
       </div>
 
       {/* Compact Info Row with Counselor Name, Devotee Name, and Copyright */}
