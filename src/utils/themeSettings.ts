@@ -182,7 +182,7 @@ export const getThemeSettings = (): ThemeSettingsState => {
 
     const rawPalette = localStorage.getItem(STORAGE_KEYS.PALETTE) as ThemePaletteId;
     const validPalettes: ThemePaletteId[] = ['saffron', 'lotus', 'emerald', 'ocean', 'royal', 'sunrise'];
-    const palette: ThemePaletteId = validPalettes.includes(rawPalette) ? rawPalette : 'saffron';
+    const palette: ThemePaletteId = validPalettes.includes(rawPalette) ? rawPalette : 'emerald';
 
     const rawFlowers = localStorage.getItem(STORAGE_KEYS.FLOWERS);
     // By default, flower shower is OFF (false) unless devotee explicitly turns it on

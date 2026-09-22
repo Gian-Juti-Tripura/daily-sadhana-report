@@ -144,7 +144,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const resetDefaults = () => {
     const def: ThemeSettingsState = {
       mode: 'light',
-      palette: 'saffron',
+      palette: 'emerald',
       flowerShower: false, // Default off to prevent screen clutter unless devotee requests it
       lightingEffects: true,
       backgroundAtmosphere: true

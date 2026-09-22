@@ -439,13 +439,21 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-2 xs:px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
+    <div className="max-w-7xl mx-auto px-2 xs:px-3 sm:px-6 py-4 sm:py-8">
 
       {/* Counselor Selector — first line of report */}
       <CounselorSelectorBar counselees={counselees} activeDevotee={activeDevotee} onDevoteeChange={onDevoteeChange} language={language} />
-      
+
+      {/* Desktop two-panel layout / Mobile single column */}
+      <div className="mt-4 sm:mt-6 lg:grid lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_380px] lg:gap-8 lg:items-start space-y-4 sm:space-y-6 lg:space-y-0">
+
+        {/* ═══════════════════════════════════════════════════════
+            LEFT PANEL — Full Form
+        ═══════════════════════════════════════════════════════ */}
+        <div className="space-y-4 sm:space-y-6 min-w-0">
+
       {/* Compact Top Banner: Title + Scale + History */}
-      <div className={`bg-gradient-to-r ${styles.bannerGradient} rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 text-white shadow-md shadow-amber-600/10`}>
+      <div className={`bg-gradient-to-r ${styles.bannerGradient} rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 text-white shadow-md shadow-emerald-600/10`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-amber-300/70 text-lg sm:text-xl font-serif leading-none shrink-0 select-none">ॐ</span>
@@ -1117,10 +1125,114 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
 
 
-      </div>
+      </div>{/* END Main Form Card */}
 
-      {/* Floating Export Action Bar — ultra-compact (1/3 size, non-blocking) */}
-      <div className="sticky bottom-1.5 sm:bottom-3 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl px-2 sm:px-4 py-1.5 flex items-center justify-between gap-1.5">
+        </div>{/* END LEFT PANEL */}
+
+        {/* ═══════════════════════════════════════════════════════
+            RIGHT PANEL — Sticky Sidebar (desktop only)
+        ═══════════════════════════════════════════════════════ */}
+        <div className="hidden lg:block">
+          <div className="sticky top-6 space-y-4">
+
+            {/* Score Summary Card */}
+            <div className={`rounded-2xl border ${styles.accentBorderColor} ${styles.subtleBgColor} p-5 shadow-sm`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`font-extrabold text-base ${styles.primaryTextColor} flex items-center gap-2`}>
+                  <span>🪷</span>
+                  {language === 'bn' ? 'দৈনিক স্কোর' : 'Daily Score'}
+                </h3>
+                <span className={`text-2xl font-black ${styles.primaryTextColor}`}>
+                  {scoreBreakdown.percentage}%
+                </span>
+              </div>
+
+              {/* Score bars */}
+              {[
+                { label: language === 'bn' ? 'দেহ' : 'Body', value: scoreBreakdown.bodyTotal, max: 75, pct: scoreBreakdown.bodyAvgPct },
+                { label: language === 'bn' ? 'আত্মা' : 'Soul', value: scoreBreakdown.soulTotal, max: 75, pct: scoreBreakdown.soulAvgPct },
+                { label: language === 'bn' ? 'মর্নিং' : 'Morning', value: scoreBreakdown.morningProgramMarks, max: 25, pct: Math.round(scoreBreakdown.morningProgramMarks / 25 * 100) },
+              ].map(({ label, value, max, pct }) => (
+                <div key={label} className="mb-3">
+                  <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <span>{label}</span>
+                    <span>{value}/{max} ({pct}%)</span>
+                  </div>
+                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full bg-gradient-to-r ${styles.bannerGradient} transition-all duration-500`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <div className={`mt-3 pt-3 border-t ${styles.accentBorderColor} flex justify-between items-center`}>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  {language === 'bn' ? 'মোট নম্বর' : 'Total Marks'}
+                </span>
+                <span className={`text-sm font-black ${styles.primaryTextColor}`}>
+                  {scoreBreakdown.totalMarks}/175
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-2.5">
+              <h3 className="font-extrabold text-sm text-slate-700 dark:text-slate-300 mb-3">
+                {language === 'bn' ? 'রিপোর্ট পাঠান' : 'Export Report'}
+              </h3>
+
+              <button
+                onClick={handleShareWhatsApp}
+                className="w-full px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe59] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 shrink-0" />
+                {language === 'bn' ? 'হোয়াটসঅ্যাপে পাঠান' : 'Send via WhatsApp'}
+              </button>
+
+              <button
+                onClick={handleCopyWhatsApp}
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-600 shrink-0" /> : <Copy className="w-4 h-4 shrink-0" />}
+                {copied
+                  ? (language === 'bn' ? 'কপি হয়েছে!' : 'Copied!')
+                  : (language === 'bn' ? 'রিপোর্ট কপি' : 'Copy Report Text')
+                }
+              </button>
+
+              <button
+                onClick={handleSaveReport}
+                className={`w-full px-4 py-2.5 rounded-xl ${styles.btnPrimary} text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer`}
+              >
+                <RefreshCw className="w-4 h-4 shrink-0" />
+                {language === 'bn' ? 'সংরক্ষণ ও সিঙ্ক' : 'Save & Sync'}
+              </button>
+            </div>
+
+            {/* WhatsApp Message Preview */}
+            <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm">
+              <h3 className="font-extrabold text-sm text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                {language === 'bn' ? 'হোয়াটসঅ্যাপ প্রিভিউ' : 'WhatsApp Preview'}
+              </h3>
+              <textarea
+                readOnly
+                value={generateWhatsAppMessage()}
+                rows={14}
+                className="w-full text-[11px] font-mono leading-relaxed text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 resize-none focus:outline-none"
+              />
+            </div>
+
+          </div>
+        </div>{/* END RIGHT PANEL */}
+
+      </div>{/* END two-panel grid */}
+
+      {/* Floating Export Action Bar — mobile only (hidden on desktop, actions in sidebar) */}
+      <div className="lg:hidden sticky bottom-1.5 sm:bottom-3 z-30 mt-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl px-2 sm:px-4 py-1.5 flex items-center justify-between gap-1.5">
+
         {/* Left: Clarified Score Badge & Devotee Name */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           {/* Score Badge with Clear Label */}
