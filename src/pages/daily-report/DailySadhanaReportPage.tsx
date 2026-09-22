@@ -101,7 +101,7 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 
   // Body
   const [wentToBed, setWentToBed] = useState('10.40 pm');
-  const [gotUp, setGotUp] = useState('3.55am');
+  const [gotUp, setGotUp] = useState('3.55 am');
   const [dayRestMinutes, setDayRestMinutes] = useState(0);
 
   // Soul
@@ -595,11 +595,11 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 type="text"
                 value={gotUp}
                 onChange={(e) => setGotUp(e.target.value)}
-                placeholder="3.55am"
+                placeholder="3.55 am"
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
               />
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {['3.30am', '3.45am', '3.55am', '4.00am', '4.15am', '4.30am'].map((t) => (
+                {['3.30 am', '3.45 am', '3.55 am', '4.00 am', '4.15 am', '4.30 am'].map((t) => (
                   <button
                     key={t}
                     type="button"
