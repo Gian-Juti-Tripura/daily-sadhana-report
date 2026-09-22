@@ -3,8 +3,9 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import {
   Palette, BookOpen, Calendar, ShieldCheck,
-  Globe, Menu
+  Globe, Menu, Download
 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { DevoteeAvatar } from '../shared/DevoteeAvatar';
 import type { CounseleeProfile } from '../../types/sadhana';
 
@@ -129,6 +130,18 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
 }) => {
   const { language, toggleLanguage } = useLanguage();
   const { styles } = useTheme();
+
+  const [canInstall, setCanInstall] = React.useState(false);
+
+  React.useEffect(() => {
+    if (Capacitor.isNativePlatform()) return;
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true;
+    if (!isStandalone) {
+      setCanInstall(true);
+    }
+  }, []);
 
   const tabs: {
     key: 'DAILY_REPORT' | 'DIGITAL_CARD' | 'COUNSELOR_DESK';
@@ -301,6 +314,20 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
             >
               <Palette className={`w-3.5 h-3.5 ${styles.primaryTextColor}`} />
             </button>
+
+            {/* Install Sadhana PWA App Trigger (shown only in browser when not standalone) */}
+            {canInstall && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('open_pwa_install_modal'))}
+                className="px-2 py-1.5 rounded-xl border border-amber-300/80 dark:border-amber-700/80 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white transition-all shadow-sm flex items-center gap-1 cursor-pointer active:scale-95 animate-pulse hover:animate-none"
+                title={language === 'bn' ? 'সাধনা অ্যাপ ইনস্টল করুন' : 'Install Sadhana App'}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-extrabold hidden sm:inline">
+                  {language === 'bn' ? 'ইনস্টল' : 'Install'}
+                </span>
+              </button>
+            )}
 
             {/* Devotee Profile Trigger */}
             <button

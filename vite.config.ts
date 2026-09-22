@@ -15,11 +15,13 @@ export default defineConfig({
         clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}']
       },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'Advaita VOICE Digital Hub',
-        short_name: 'VOICE Hub',
-        description: 'Advaita VOICE Ashram Management, Prasad, Sadhana & Syllabus System',
+        name: 'Sadhana',
+        short_name: 'Sadhana',
+        description: 'Daily Sadhana Report and Spiritual Card Portal',
+        start_url: '/',
+        scope: '/',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { 
-  X, Eye, EyeOff, ChevronDown, LogOut
+  X, Eye, EyeOff, ChevronDown, LogOut, Download
 } from 'lucide-react';
 import type { CounseleeProfile } from '../../types/sadhana';
 import { 
@@ -505,6 +505,21 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
               </div>
             </div>
           )}
+
+          {/* Quick Install PWA Option */}
+          <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                window.dispatchEvent(new CustomEvent('open_pwa_install_modal'));
+              }}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{language === 'bn' ? 'সাধনা অ্যাপ ইনস্টল করুন (PWA)' : 'Install Sadhana App (PWA)'}</span>
+            </button>
+          </div>
 
         </div>
       </div>
