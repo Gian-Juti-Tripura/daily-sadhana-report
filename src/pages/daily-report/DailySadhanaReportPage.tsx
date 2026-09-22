@@ -502,7 +502,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <button
                 type="button"
                 onClick={() => setIsHistoryModalOpen(true)}
-                className="text-[11px] text-amber-600 dark:text-amber-400 font-bold hover:underline flex items-center gap-0.5 cursor-pointer shrink-0 ml-1"
+                className={`text-[11px] ${styles.primaryTextColor} font-bold hover:underline flex items-center gap-0.5 cursor-pointer shrink-0 ml-1`}
               >
                 <span>{language === 'bn' ? 'ক্যালেন্ডার' : 'Calendar'}</span>
               </button>
@@ -512,7 +512,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               value={reportDate}
               onChange={(e) => setReportDate(e.target.value)}
               placeholder="17/9/26"
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 transition-all"
+              className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing} transition-all`}
             />
           </div>
 
@@ -525,7 +525,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <select
               value={stayingAt}
               onChange={(e) => setStayingAt(e.target.value as StayingLocation)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 transition-all cursor-pointer"
+              className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing} transition-all cursor-pointer`}
             >
               <option value="VOICE">{language === 'bn' ? 'VOICE (ভয়েস)' : 'VOICE'}</option>
               <option value="Home">{language === 'bn' ? 'Home (বাড়ি)' : 'Home'}</option>
@@ -555,22 +555,24 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* (1) Went to bed */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                  (1) {language === 'bn' ? 'শয়ন সময় (Went to bed)' : 'Went to bed'}
-                </label>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                  +{scoreBreakdown.wentToBedMarks} pts
-                </span>
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col justify-between h-full space-y-2.5">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                    (1) {language === 'bn' ? 'শয়ন সময় (Went to bed)' : 'Went to bed'}
+                  </label>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
+                    +{scoreBreakdown.wentToBedMarks} pts
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={wentToBed}
+                  onChange={(e) => setWentToBed(e.target.value)}
+                  placeholder="10.40 pm"
+                  className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
+                />
               </div>
-              <input
-                type="text"
-                value={wentToBed}
-                onChange={(e) => setWentToBed(e.target.value)}
-                placeholder="10.40 pm"
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
-              />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {['9.30 pm', '9.45 pm', '10.00 pm', '10.30 pm', '10.40 pm', '11.00 pm'].map((t) => (
                   <button
@@ -590,22 +592,24 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             </div>
 
             {/* (2) Got up */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                  (2) {language === 'bn' ? 'শয্যা ত্যাগ (Got up)' : 'Got up'}
-                </label>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                  +{scoreBreakdown.wakeUpMarks} pts
-                </span>
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col justify-between h-full space-y-2.5">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                    (2) {language === 'bn' ? 'শয্যা ত্যাগ (Got up)' : 'Got up'}
+                  </label>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
+                    +{scoreBreakdown.wakeUpMarks} pts
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={gotUp}
+                  onChange={(e) => setGotUp(e.target.value)}
+                  placeholder="3.55 am"
+                  className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
+                />
               </div>
-              <input
-                type="text"
-                value={gotUp}
-                onChange={(e) => setGotUp(e.target.value)}
-                placeholder="3.55 am"
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
-              />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {['3.30 am', '3.45 am', '3.55 am', '4.00 am', '4.15 am', '4.30 am'].map((t) => (
                   <button
@@ -625,25 +629,27 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             </div>
 
             {/* (3) Day rest */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                  (3) {language === 'bn' ? 'দিবানিন্দ্রা (Day rest)' : 'Day rest (minutes)'}
-                </label>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                  +{scoreBreakdown.daySleepMarks} pts
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  min={0}
-                  max={240}
-                  value={dayRestMinutes}
-                  onChange={(e) => setDayRestMinutes(parseInt(e.target.value, 10) || 0)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
-                />
-                <span className="text-xs font-bold text-slate-500">min</span>
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col justify-between h-full space-y-2.5">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                    (3) {language === 'bn' ? 'দিবানিন্দ্রা (Day rest)' : 'Day rest (minutes)'}
+                  </label>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
+                    +{scoreBreakdown.daySleepMarks} pts
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={240}
+                    value={dayRestMinutes}
+                    onChange={(e) => setDayRestMinutes(parseInt(e.target.value, 10) || 0)}
+                    className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
+                  />
+                  <span className="text-xs font-bold text-slate-500">min</span>
+                </div>
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {[0, 15, 30, 45, 60].map((m) => (
@@ -781,7 +787,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                   <select
                     value={scriptureBook}
                     onChange={(e) => setScriptureBook(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500"
+                    className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
                   >
                     {PRABHUPADA_8_SEMESTER_CURRICULUM.map((sem) => (
                       <optgroup 
@@ -812,7 +818,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                     value={customBookName}
                     onChange={(e) => setCustomBookName(e.target.value)}
                     placeholder="e.g. Teachings of Lord Caitanya"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
+                    className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
                   />
                 </div>
               )}
@@ -828,7 +834,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                     value={scriptureChapterPage}
                     onChange={(e) => setScriptureChapterPage(e.target.value)}
                     placeholder="Chapter 4, Verses 1-10"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
+                    className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
                   />
                 </div>
 
@@ -870,7 +876,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                       min={0}
                       value={lectureSpMinutes}
                       onChange={(e) => setLectureSpMinutes(parseInt(e.target.value, 10) || 0)}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold"
+                      className={`w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold focus:ring-2 focus:${styles.activeRing}`}
                     />
                     <span className="text-xs font-bold text-slate-400">min</span>
                   </div>
@@ -886,7 +892,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                       min={0}
                       value={lectureGuruMinutes}
                       onChange={(e) => setLectureGuruMinutes(parseInt(e.target.value, 10) || 0)}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold"
+                      className={`w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold focus:ring-2 focus:${styles.activeRing}`}
                     />
                     <span className="text-xs font-bold text-slate-400">min</span>
                   </div>
@@ -902,7 +908,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                       min={0}
                       value={lectureOtherMinutes}
                       onChange={(e) => setLectureOtherMinutes(parseInt(e.target.value, 10) || 0)}
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold"
+                      className={`w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm font-bold focus:ring-2 focus:${styles.activeRing}`}
                     />
                     <span className="text-xs font-bold text-slate-400">min</span>
                   </div>
@@ -930,56 +936,83 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             {/* (1) Rendered Seva */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                (1) {language === 'bn' ? 'সম্পাদিত সেবা (Rendered Seva)' : 'Rendered Seva (dropdown / text)'}
-              </label>
-              <select
-                value={selectedSeva}
-                onChange={(e) => setSelectedSeva(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100"
-              >
-                {ASHRAM_SERVICES.map((s, idx) => (
-                  <option key={idx} value={s}>
-                    {language === 'bn' ? (SEVA_BN_MAP[s] || s) : s}
-                  </option>
-                ))}
-              </select>
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between h-full min-h-[175px] space-y-2">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  (1) {language === 'bn' ? 'সম্পাদিত সেবা (Rendered Seva)' : 'Rendered Seva (dropdown / text)'}
+                </label>
+                <select
+                  value={selectedSeva}
+                  onChange={(e) => setSelectedSeva(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
+                >
+                  {ASHRAM_SERVICES.map((s, idx) => (
+                    <option key={idx} value={s}>
+                      {language === 'bn' ? (SEVA_BN_MAP[s] || s) : s}
+                    </option>
+                  ))}
+                </select>
 
-              {selectedSeva === 'Custom (অন্যান্য)' && (
-                <input
-                  type="text"
-                  value={customSeva}
-                  onChange={(e) => setCustomSeva(e.target.value)}
-                  placeholder={language === 'bn' ? 'সেবার বিবরণ লিখুন...' : 'Enter service details...'}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100 mt-2"
-                />
-              )}
+                {selectedSeva === 'Custom (অন্যান্য)' && (
+                  <input
+                    type="text"
+                    value={customSeva}
+                    onChange={(e) => setCustomSeva(e.target.value)}
+                    placeholder={language === 'bn' ? 'সেবার বিবরণ লিখুন...' : 'Enter service details...'}
+                    className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100 mt-2 focus:ring-2 focus:${styles.activeRing}`}
+                  />
+                )}
+              </div>
+
+              {/* Quick Select Popular Sevas */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[
+                  { key: ASHRAM_SERVICES[0], labelBn: 'শ্রীবিগ্রহ ও বারান্দা', labelEn: 'Deities & Veranda' },
+                  { key: ASHRAM_SERVICES[2], labelBn: 'ভোগ নিবেদন', labelEn: 'Bhoga Offering' },
+                  { key: ASHRAM_SERVICES[3], labelBn: 'পাত্র ধৌত ও আরতি', labelEn: 'Utensils & Arati' },
+                  { key: ASHRAM_SERVICES[14], labelBn: 'গ্রন্থ বিতরণ', labelEn: 'Book Distribution' },
+                ].map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => setSelectedSeva(s.key)}
+                    className={`text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                      selectedSeva === s.key
+                        ? `${styles.btnPrimary} text-white border-transparent shadow-xs`
+                        : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                    }`}
+                  >
+                    {language === 'bn' ? s.labelBn : s.labelEn}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* (2) Academic & Career study */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  (2) {language === 'bn' ? 'একাডেমিক / ক্যারিয়ার (চাকরির) পড়াশোনা (Academic / Career study)' : 'Academic / Career study (hours)'}
-                </label>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${styles.badgeClass}`}>
-                  {academicStudyHours > 0
-                    ? (language === 'bn' ? `${toBnNum(academicStudyHours)} ঘণ্টা সম্পন্ন` : `${academicStudyHours}h logged`)
-                    : (language === 'bn' ? 'সময় লিখুন' : 'Record hours')}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  step="0.5"
-                  min={0}
-                  max={24}
-                  value={academicStudyHours}
-                  onChange={(e) => setAcademicStudyHours(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100"
-                />
-                <span className="text-xs font-bold text-slate-500">hours</span>
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between h-full min-h-[175px] space-y-2">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    (2) {language === 'bn' ? 'একাডেমিক / ক্যারিয়ার (চাকরির) পড়াশোনা (Academic / Career study)' : 'Academic / Career study (hours)'}
+                  </label>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${styles.badgeClass}`}>
+                    {academicStudyHours > 0
+                      ? (language === 'bn' ? `${toBnNum(academicStudyHours)} ঘণ্টা সম্পন্ন` : `${academicStudyHours}h logged`)
+                      : (language === 'bn' ? 'সময় লিখুন' : 'Record hours')}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    step="0.5"
+                    min={0}
+                    max={24}
+                    value={academicStudyHours}
+                    onChange={(e) => setAcademicStudyHours(parseFloat(e.target.value) || 0)}
+                    className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
+                  />
+                  <span className="text-xs font-bold text-slate-500">hours</span>
+                </div>
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {[1.0, 1.5, 2.0, 2.5, 3.0, 4.0].map((h) => (
@@ -1019,42 +1052,77 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             
             {/* Mangalarati */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
-              <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {language === 'bn' ? '১. মঙ্গল আরতি (Mangalarati)' : '1. Mangalarati'}
-              </span>
+            <div className={`p-3.5 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 ${
+              mangalarati
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base select-none">🌅</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {language === 'bn' ? '১. মঙ্গল আরতি (Mangalarati)' : '1. Mangalarati'}
+                </span>
+              </div>
               <YesNoToggle value={mangalarati} onChange={setMangalarati} />
             </div>
 
             {/* Nrsimharati */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
-              <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {language === 'bn' ? '২. নৃসিংহ আরতি (Nrsimharati)' : '2. Nrsimharati'}
-              </span>
+            <div className={`p-3.5 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 ${
+              nrsimharati
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base select-none">🦁</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {language === 'bn' ? '২. নৃসিংহ আরতি (Nrsimharati)' : '2. Nrsimharati'}
+                </span>
+              </div>
               <YesNoToggle value={nrsimharati} onChange={setNrsimharati} />
             </div>
 
             {/* Tulasi arati & parikrama */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
-              <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {language === 'bn' ? '৩. তুলসী আরতি ও পরিক্রমা (Tulasi arati & parikrama)' : '3. Tulasi arati & parikrama'}
-              </span>
+            <div className={`p-3.5 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 ${
+              tulasiArati
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base select-none">🌿</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {language === 'bn' ? '৩. তুলসী আরতি ও পরিক্রমা (Tulasi arati & parikrama)' : '3. Tulasi arati & parikrama'}
+                </span>
+              </div>
               <YesNoToggle value={tulasiArati} onChange={setTulasiArati} />
             </div>
 
             {/* Watering Vrinda devi */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
-              <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {language === 'bn' ? '৪. বৃন্দাদেবীকে জলদান (Watering Vrinda devi)' : '4. Watering Vrinda devi'}
-              </span>
+            <div className={`p-3.5 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 ${
+              wateringVrinda
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base select-none">💧</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {language === 'bn' ? '৪. বৃন্দাদেবীকে জলদান (Watering Vrinda devi)' : '4. Watering Vrinda devi'}
+                </span>
+              </div>
               <YesNoToggle value={wateringVrinda} onChange={setWateringVrinda} />
             </div>
 
             {/* Siksastakam & 10 offenses */}
-            <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3 sm:col-span-2">
-              <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {language === 'bn' ? '৫. শিক্ষাষ্টক ও দশবিধ নামাপরাধ পাঠ (Siksastakam & 10 offenses)' : '5. Siksastakam & 10 offenses recitation'}
-              </span>
+            <div className={`p-3.5 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 sm:col-span-2 ${
+              siksastakamAndOffenses
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base select-none">📜</span>
+                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {language === 'bn' ? '৫. শিক্ষাষ্টক ও দশবিধ নামাপরাধ পাঠ (Siksastakam & 10 offenses)' : '5. Siksastakam & 10 offenses recitation'}
+                </span>
+              </div>
               <YesNoToggle value={siksastakamAndOffenses} onChange={setSiksastakamAndOffenses} />
             </div>
 
@@ -1073,37 +1141,54 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* (1) Sloka memorizing */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
-              <div>
-                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block">
-                  (1) {language === 'bn' ? 'শ্লোক মুখস্থকরণ' : 'Sloka memorizing'}
-                </span>
-                <span className="text-[11px] text-slate-500">
-                  {slokaMemorized ? (language === 'bn' ? 'মুখস্থ সম্পন্ন' : 'Memorized') : (language === 'bn' ? 'চলমান' : 'In progress')}
-                </span>
+            <div className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 ${
+              slokaMemorized
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-start gap-2">
+                <span className="text-base select-none mt-0.5">📖</span>
+                <div>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block">
+                    (1) {language === 'bn' ? 'শ্লোক মুখস্থকরণ' : 'Sloka memorizing'}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    {slokaMemorized ? (language === 'bn' ? 'মুখস্থ সম্পন্ন' : 'Memorized') : (language === 'bn' ? 'চলমান' : 'In progress')}
+                  </span>
+                </div>
               </div>
               <YesNoToggle value={slokaMemorized} onChange={setSlokaMemorized} />
             </div>
 
             {/* (2) Bhajan / Gayatri */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
-              <div>
-                <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block">
-                  (2) {language === 'bn' ? 'ভজন ও গায়ত্রী সম্পন্ন' : 'Bhajan / Gayatri'}
-                </span>
-                <span className="text-[11px] text-slate-500">
-                  {bhajanGayatriCompleted ? (language === 'bn' ? 'সম্পন্ন' : 'Completed') : (language === 'bn' ? 'অসম্পূর্ণ' : 'Pending')}
-                </span>
+            <div className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 shadow-xs flex items-center justify-between gap-3 ${
+              bhajanGayatriCompleted
+                ? 'border-emerald-400/60 dark:border-emerald-600/60 bg-emerald-50/25 dark:bg-emerald-950/20'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60'
+            }`}>
+              <div className="flex items-start gap-2">
+                <span className="text-base select-none mt-0.5">📿</span>
+                <div>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block">
+                    (2) {language === 'bn' ? 'ভজন ও গায়ত্রী সম্পন্ন' : 'Bhajan / Gayatri'}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    {bhajanGayatriCompleted ? (language === 'bn' ? 'সম্পন্ন' : 'Completed') : (language === 'bn' ? 'অসম্পূর্ণ' : 'Pending')}
+                  </span>
+                </div>
               </div>
               <YesNoToggle value={bhajanGayatriCompleted} onChange={setBhajanGayatriCompleted} />
             </div>
 
             {/* (3) Social media / Screen time */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 space-y-1.5 flex flex-col justify-between">
+            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 flex flex-col justify-between space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  (3) {language === 'bn' ? 'সোশ্যাল মিডিয়া / স্ক্রিন সময়' : 'Social media / screen time'}
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base select-none">📱</span>
+                  <label className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    (3) {language === 'bn' ? 'সোশ্যাল মিডিয়া সময়' : 'Screen time'}
+                  </label>
+                </div>
                 <span className="text-[11px] text-slate-500">
                   {socialMediaMinutes <= 30 ? '✅ Controlled' : '⚠️ Keep ≤30m'}
                 </span>
@@ -1114,9 +1199,25 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                   min={0}
                   value={socialMediaMinutes}
                   onChange={(e) => setSocialMediaMinutes(parseInt(e.target.value, 10) || 0)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100"
+                  className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing}`}
                 />
                 <span className="text-xs text-slate-500 font-semibold">min</span>
+              </div>
+              <div className="flex flex-wrap gap-1 pt-0.5">
+                {[0, 15, 30, 45, 60].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setSocialMediaMinutes(m)}
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-all cursor-pointer ${
+                      socialMediaMinutes === m
+                        ? `${styles.btnPrimary} text-white border-transparent shadow-xs`
+                        : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                    }`}
+                  >
+                    {m}m
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -1133,32 +1234,37 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             RIGHT PANEL — Sticky Sidebar (desktop only)
         ═══════════════════════════════════════════════════════ */}
         <div className="hidden lg:block">
-          <div className="sticky top-6 space-y-4">
+          <div className="sticky top-24 space-y-4">
 
             {/* Score Summary Card */}
             <div className={`rounded-2xl border ${styles.accentBorderColor} ${styles.subtleBgColor} p-5 shadow-sm`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className={`font-extrabold text-base ${styles.primaryTextColor} flex items-center gap-2`}>
                   <span>🪷</span>
-                  {language === 'bn' ? 'দৈনিক স্কোর' : 'Daily Score'}
+                  {language === 'bn' ? 'দৈনিক মূল্যায়ন' : 'Daily Evaluation'}
                 </h3>
-                <span className={`text-2xl font-black ${styles.primaryTextColor}`}>
-                  {scoreBreakdown.percentage}%
-                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className={`text-2xl font-black ${styles.primaryTextColor}`}>
+                    {scoreBreakdown.percentage}%
+                  </span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
+                    {scoreBreakdown.percentage >= 80 ? (language === 'bn' ? 'উত্তম' : 'Excellent') : (language === 'bn' ? 'চলমান' : 'Progressing')}
+                  </span>
+                </div>
               </div>
 
               {/* Score bars */}
               {[
-                { label: language === 'bn' ? 'দেহ' : 'Body', value: scoreBreakdown.bodyTotal, max: 75, pct: scoreBreakdown.bodyAvgPct },
-                { label: language === 'bn' ? 'আত্মা' : 'Soul', value: scoreBreakdown.soulTotal, max: 75, pct: scoreBreakdown.soulAvgPct },
-                { label: language === 'bn' ? 'মর্নিং' : 'Morning', value: scoreBreakdown.morningProgramMarks, max: 25, pct: Math.round(scoreBreakdown.morningProgramMarks / 25 * 100) },
+                { label: language === 'bn' ? 'দেহ (Body)' : 'Body', value: scoreBreakdown.bodyTotal, max: 75, pct: scoreBreakdown.bodyAvgPct },
+                { label: language === 'bn' ? 'আত্মা (Soul)' : 'Soul', value: scoreBreakdown.soulTotal, max: 75, pct: scoreBreakdown.soulAvgPct },
+                { label: language === 'bn' ? 'মর্নিং প্রোগ্রাম (Morning)' : 'Morning Program', value: scoreBreakdown.morningProgramMarks, max: 25, pct: Math.round(scoreBreakdown.morningProgramMarks / 25 * 100) },
               ].map(({ label, value, max, pct }) => (
                 <div key={label} className="mb-3">
                   <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     <span>{label}</span>
-                    <span>{value}/{max} ({pct}%)</span>
+                    <span>{toBnNum(value)}/{toBnNum(max)} ({toBnNum(pct)}%)</span>
                   </div>
-                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden p-0.5">
                     <div
                       className={`h-full rounded-full bg-gradient-to-r ${styles.bannerGradient} transition-all duration-500`}
                       style={{ width: `${pct}%` }}
@@ -1169,23 +1275,24 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
               <div className={`mt-3 pt-3 border-t ${styles.accentBorderColor} flex justify-between items-center`}>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {language === 'bn' ? 'মোট নম্বর' : 'Total Marks'}
+                  {language === 'bn' ? 'মোট নম্বর (১৭৫ ম্যাট্রিক্স)' : 'Total Marks (175 Matrix)'}
                 </span>
                 <span className={`text-sm font-black ${styles.primaryTextColor}`}>
-                  {scoreBreakdown.totalMarks}/175
+                  {toBnNum(scoreBreakdown.totalMarks)}/১৭৫
                 </span>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-2.5">
-              <h3 className="font-extrabold text-sm text-slate-700 dark:text-slate-300 mb-3">
-                {language === 'bn' ? 'রিপোর্ট পাঠান' : 'Export Report'}
+              <h3 className="font-extrabold text-sm text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-between">
+                <span>{language === 'bn' ? 'রিপোর্ট অ্যাকশন' : 'Report Actions'}</span>
+                <span className="text-[10px] text-slate-400 font-normal">Desktop</span>
               </h3>
 
               <button
                 onClick={handleShareWhatsApp}
-                className="w-full px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe59] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe59] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer hover:shadow-md"
               >
                 <MessageCircle className="w-4 h-4 shrink-0" />
                 {language === 'bn' ? 'হোয়াটসঅ্যাপে পাঠান' : 'Send via WhatsApp'}
@@ -1193,34 +1300,44 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
               <button
                 onClick={handleCopyWhatsApp}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer hover:shadow-xs"
               >
                 {copied ? <Check className="w-4 h-4 text-green-600 shrink-0" /> : <Copy className="w-4 h-4 shrink-0" />}
                 {copied
                   ? (language === 'bn' ? 'কপি হয়েছে!' : 'Copied!')
-                  : (language === 'bn' ? 'রিপোর্ট কপি' : 'Copy Report Text')
+                  : (language === 'bn' ? 'রিপোর্ট টেক্সট কপি' : 'Copy Report Text')
                 }
               </button>
 
               <button
                 onClick={handleSaveReport}
-                className={`w-full px-4 py-2.5 rounded-xl ${styles.btnPrimary} text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer`}
+                className={`w-full px-4 py-2.5 rounded-xl ${styles.btnPrimary} text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer hover:shadow-md`}
               >
                 <RefreshCw className="w-4 h-4 shrink-0" />
                 {language === 'bn' ? 'সংরক্ষণ ও সিঙ্ক' : 'Save & Sync'}
               </button>
             </div>
 
-            {/* WhatsApp Message Preview */}
+            {/* WhatsApp Message Preview with quick copy */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm">
-              <h3 className="font-extrabold text-sm text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                {language === 'bn' ? 'হোয়াটসঅ্যাপ প্রিভিউ' : 'WhatsApp Preview'}
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-extrabold text-sm text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                  {language === 'bn' ? 'হোয়াটসঅ্যাপ প্রিভিউ' : 'WhatsApp Preview'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleCopyWhatsApp}
+                  className={`text-[11px] font-bold ${styles.primaryTextColor} hover:underline flex items-center gap-1 cursor-pointer`}
+                >
+                  <Copy className="w-3 h-3" />
+                  <span>{copied ? (language === 'bn' ? 'কপি!' : 'Copied!') : (language === 'bn' ? 'কপি' : 'Copy')}</span>
+                </button>
+              </div>
               <textarea
                 readOnly
                 value={generateWhatsAppMessage()}
-                rows={14}
+                rows={13}
                 className="w-full text-[11px] font-mono leading-relaxed text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 resize-none focus:outline-none"
               />
             </div>
