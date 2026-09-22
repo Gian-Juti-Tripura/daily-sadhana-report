@@ -346,9 +346,9 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
     (খ) গুরুমহারাজ: ${toBnNum(lectureGuruMinutes)} মিনিট
     (গ) অন্যান্য: ${toBnNum(lectureOtherMinutes)} মিনিট
 
-*সেবা ও প্রাতিষ্ঠানিক পড়াশোনা:*
+*সেবা ও একাডেমিক / ক্যারিয়ার পড়াশোনা:*
 (১) সম্পাদিত সেবা: ${effectiveRenderedSevaBn}
-(২) প্রাতিষ্ঠানিক পড়াশোনা: ${toBnNum(academicStudyHours)} ঘন্টা
+(২) একাডেমিক / ক্যারিয়ার (চাকরির) পড়াশোনা: ${toBnNum(academicStudyHours)} ঘন্টা
 
 *মর্নিং প্রোগ্রাম উপস্থিতি:*
 (১) মঙ্গল আরতি: ${mangalarati ? 'হ্যাঁ' : 'না'}
@@ -397,9 +397,9 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
     (b) Gurumaharaj: ${lectureGuruMinutes} min
     (c) Others: ${lectureOtherMinutes} min
 
-*Seva & Academic Study:*
+*Seva & Academic / Career Study:*
 (1) Seva performed: ${effectiveRenderedSeva}
-(2) Academic study: ${academicStudyHours} hrs
+(2) Academic / Career study: ${academicStudyHours} hrs
 
 *Morning Program Attendance:*
 (1) Mangalarati: ${mangalarati ? 'Yes' : 'No'}
@@ -925,7 +925,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="flex items-center space-x-2">
               <HeartHandshake className={`w-5 h-5 ${styles.primaryTextColor}`} />
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100">
-                {language === 'bn' ? '৩. সেবা ও একাডেমিক পড়াশোনা (Seva & Academic study)' : '3. Seva & Academic Study'}
+                {language === 'bn' ? '৩. সেবা ও একাডেমিক / ক্যারিয়ার পড়াশোনা (Seva & Academic / Career study)' : '3. Seva & Academic / Career Study'}
               </h3>
             </div>
             <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
@@ -963,13 +963,13 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               )}
             </div>
 
-            {/* (2) Academic study */}
+            {/* (2) Academic & Career study */}
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  (2) {language === 'bn' ? 'একাডেমিক পড়াশোনা (Academic study)' : 'Academic study (hours)'}
+                  (2) {language === 'bn' ? 'একাডেমিক / ক্যারিয়ার (চাকরির) পড়াশোনা (Academic / Career study)' : 'Academic / Career study (hours)'}
                 </label>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${styles.badgeClass}`}>
                   {academicStudyHours > 0
                     ? (language === 'bn' ? `${toBnNum(academicStudyHours)} ঘণ্টা সম্পন্ন` : `${academicStudyHours}h logged`)
                     : (language === 'bn' ? 'সময় লিখুন' : 'Record hours')}
@@ -1447,7 +1447,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
         <div className="mb-4 grid grid-cols-2 gap-3.5 text-xs">
           <div className="border border-slate-200 rounded-xl p-3 bg-slate-50/70">
             <h4 className="font-black text-slate-800 mb-2 border-b border-slate-200 pb-1 text-[11px] uppercase tracking-wider">
-              Seva & Academic Study
+              Seva & Academic / Career Study
             </h4>
             <div className="space-y-1.5">
               <div>
@@ -1457,7 +1457,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 </span>
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-slate-500 text-[10px] font-bold uppercase">Academic Study:</span>
+                <span className="text-slate-500 text-[10px] font-bold uppercase">Academic / Career Study:</span>
                 <span className="font-bold text-slate-800 text-xs">
                   {academicStudyHours} Hours
                 </span>

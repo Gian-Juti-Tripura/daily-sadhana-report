@@ -319,13 +319,13 @@ export const ScaleRulesModal: React.FC<ScaleRulesModalProps> = ({
                   <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-1.5">
                     <Heart className="w-4 h-4 text-rose-500" />
                     <h4 className="font-black text-xs uppercase tracking-wider text-slate-800 dark:text-slate-200">
-                      {language === 'bn' ? '৩. সেবা ও পড়াশোনা (Seva)' : '3. Seva & Academic Study'}
+                      {language === 'bn' ? '৩. সেবা ও একাডেমিক / ক্যারিয়ার পড়াশোনা (Seva)' : '3. Seva & Academic / Career Study'}
                     </h4>
                   </div>
                   
                   <div className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                     <div className="p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
-                      <span className="font-bold block text-slate-900 dark:text-slate-100">STUDY / ACADEMICS (Max 25 pts):</span>
+                      <span className="font-bold block text-slate-900 dark:text-slate-100">STUDY / ACADEMICS / CAREER (Max 25 pts):</span>
                       <span className="text-[11px] text-slate-500">2h+ = 25 pts | 1:45h = 20 pts | 1:30h = 15 pts | 1h = 10 pts | 30m = 5 pts</span>
                     </div>
 
