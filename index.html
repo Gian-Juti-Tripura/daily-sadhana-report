@@ -22,6 +22,29 @@
     <title>Daily Sadhana & Digital Sadhana Card Portal | Central VOICE</title>
     <meta name="description" content="Daily Sadhana Report and Digital Sadhana Card 7-Day Matrix for HG Rashbihari Krishna Chandra Das Brahmachari & Central VOICE Counselors, IYF Chittagong." />
     <meta name="theme-color" content="#f59e0b" />
+    
+    <!-- Automatic Stale Deployment Recovery (Auto-reloads if old CSS/JS chunk hashes mismatch) -->
+    <script>
+      window.addEventListener('vite:preloadError', function() {
+        window.location.reload();
+      });
+      window.addEventListener('error', function(e) {
+        if (e.target && (e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT')) {
+          var key = 'advaita_chunk_reload_ts';
+          var last = sessionStorage.getItem(key);
+          var now = Date.now();
+          if (!last || now - parseInt(last, 10) > 10000) {
+            sessionStorage.setItem(key, String(now));
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                names.forEach(function(n) { caches.delete(n); });
+              });
+            }
+            window.location.reload();
+          }
+        }
+      }, true);
+    </script>
   </head>
   <body class="antialiased selection:bg-amber-500 selection:text-white">
     <div id="root"></div>
