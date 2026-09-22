@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, Sparkles } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const InstallPromptBanner: React.FC = () => {
+  const isNative = Capacitor.isNativePlatform();
   const { language } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
+    // 0. Do not show PWA installation prompt inside native Android / iOS apps
+    if (isNative) return;
+
     // 1. Check if already installed & running in standalone mode
     const standaloneMode = 
       window.matchMedia('(display-mode: standalone)').matches || 
@@ -67,7 +72,7 @@ export const InstallPromptBanner: React.FC = () => {
     localStorage.setItem('voice_pwa_installed_or_dismissed', 'true');
   };
 
-  if (!showModal || isStandalone) return null;
+  if (isNative || !showModal || isStandalone) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
