@@ -101,7 +101,7 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 
   // Body
   const [wentToBed, setWentToBed] = useState('10.40 pm');
-  const [gotUp, setGotUp] = useState('3.55AM');
+  const [gotUp, setGotUp] = useState('3.55am');
   const [dayRestMinutes, setDayRestMinutes] = useState(0);
 
   // Soul
@@ -360,14 +360,7 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 *অন্যান্য:*
 (১) শ্লোক মুখস্থকরণ: ${slokaMemorized ? 'হ্যাঁ' : 'না'}
 (২) ভজন / গায়ত্রী: ${bhajanGayatriCompleted ? 'হ্যাঁ' : 'না'}
-(৩) সোশ্যাল মিডিয়া / স্ক্রিন সময়: ${toBnNum(socialMediaMinutes)} মিনিট
-
-*দৈনিক মূল্যায়ন (১৭৫ ম্যাট্রিক্স):*
-▪ স্কোর: ${toBnNum(scoreBreakdown.percentage)}% (${toBnNum(scoreBreakdown.totalMarks)}/১৭৫ নম্বর, স্কেল ${toBnNum(activeDevotee.scaleId)})
-▪ বিভাগীয় গড়:
-    (ক) দেহ: ${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ (${toBnNum(scoreBreakdown.bodyAvgPct)}%)
-    (খ) আত্মা: ${toBnNum(scoreBreakdown.soulTotal)}/৭৫ (${toBnNum(scoreBreakdown.soulAvgPct)}%)
-    (গ) মর্নিং প্রোগ্রাম: ${toBnNum(scoreBreakdown.morningProgramMarks)}/২৫`;
+(৩) সোশ্যাল মিডিয়া / স্ক্রিন সময়: ${toBnNum(socialMediaMinutes)} মিনিট`;
     }
 
     // English Report Format
@@ -411,14 +404,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 *Additional:*
 (1) Sloka memorizing: ${slokaMemorized ? 'Yes' : 'No'}
 (2) Bhajan / Gayatri: ${bhajanGayatriCompleted ? 'Yes' : 'No'}
-(3) Social media / Screen time: ${socialMediaMinutes} min
-
-*Daily Evaluation (175 Matrix):*
-▪ Score: ${scoreBreakdown.percentage}% (${scoreBreakdown.totalMarks}/175 marks, Scale ${activeDevotee.scaleId})
-▪ Category Average:
-    (a) Body: ${scoreBreakdown.bodyTotal}/75 (${scoreBreakdown.bodyAvgPct}%)
-    (b) Soul: ${scoreBreakdown.soulTotal}/75 (${scoreBreakdown.soulAvgPct}%)
-    (c) Morning Program: ${scoreBreakdown.morningProgramMarks}/25`;
+(3) Social media / Screen time: ${socialMediaMinutes} min`;
   };
 
   const handleCopyWhatsApp = () => {
@@ -609,11 +595,11 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 type="text"
                 value={gotUp}
                 onChange={(e) => setGotUp(e.target.value)}
-                placeholder="3.55AM"
+                placeholder="3.55am"
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
               />
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {['3.30AM', '3.45AM', '3.55AM', '4.00AM', '4.15AM', '4.30AM'].map((t) => (
+                {['3.30am', '3.45am', '3.55am', '4.00am', '4.15am', '4.30am'].map((t) => (
                   <button
                     key={t}
                     type="button"
