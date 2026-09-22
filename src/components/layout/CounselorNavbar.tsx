@@ -246,7 +246,7 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
                 <img
                   src="/logo.png"
                   alt="VOICE"
-                  className="w-full h-full object-cover rounded-xl bg-white p-1"
+                  className="w-full h-full object-cover rounded-[10px]"
                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                 />
               </div>
