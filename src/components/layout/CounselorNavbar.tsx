@@ -242,11 +242,11 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
             onClick={() => setActiveTab('DAILY_REPORT')}
           >
             <div className="relative shrink-0">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr ${styles.bannerGradient} p-0.5 shadow-md flex items-center justify-center overflow-hidden`}>
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr ${styles.bannerGradient} p-0.5 shadow-md flex items-center justify-center overflow-hidden ring-1.5 ring-emerald-400/30`}>
                 <img
                   src="/logo.png"
                   alt="VOICE"
-                  className="w-full h-full object-cover rounded-[10px]"
+                  className="w-full h-full object-cover rounded-full"
                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                 />
               </div>

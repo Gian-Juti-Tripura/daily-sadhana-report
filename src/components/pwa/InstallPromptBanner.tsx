@@ -88,8 +88,8 @@ export const InstallPromptBanner: React.FC = () => {
         </button>
 
         {/* Icon & Glow */}
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 p-0.5 shadow-lg shadow-amber-500/30 flex items-center justify-center overflow-hidden">
-          <img src="/logo.png" alt="App Logo" className="w-full h-full object-cover rounded-[14px]" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+        <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 p-0.5 shadow-lg shadow-emerald-500/30 flex items-center justify-center overflow-hidden ring-2 ring-emerald-400/30">
+          <img src="/logo.png" alt="App Logo" className="w-full h-full object-cover rounded-full" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
         </div>
 
         {/* Title & Description */}
