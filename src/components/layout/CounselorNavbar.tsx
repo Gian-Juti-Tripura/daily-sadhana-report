@@ -255,18 +255,18 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
             onClick={() => setActiveTab('DAILY_REPORT')}
           >
             <div className="relative shrink-0">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr ${styles.bannerGradient} p-0.5 shadow-md flex items-center justify-center overflow-hidden ring-1.5 ring-emerald-400/30`}>
+              <div className={`w-7 h-7 xs:w-7.5 xs:h-7.5 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-tr ${styles.bannerGradient} p-0.5 shadow-md flex items-center justify-center overflow-hidden ring-1.5 ring-emerald-400/30`}>
                 <img
                   src="/logo.png"
-                  alt="VOICE"
+                  alt="Sadhana"
                   className="w-full h-full object-cover rounded-full"
                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                 />
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-900" />
+              <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border-2 border-white dark:border-slate-900" />
             </div>
-            <h1 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-tight truncate max-w-[130px] xs:max-w-[170px] sm:max-w-none">
-              {language === 'bn' ? 'সাধনা পোর্টাল' : 'VOICE Sadhana Portal'}
+            <h1 className="font-extrabold text-xs xs:text-sm sm:text-base text-slate-800 dark:text-slate-100 leading-tight truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none">
+              {language === 'bn' ? 'সাধনা পোর্টাল' : 'Sadhana Portal'}
             </h1>
           </div>
 

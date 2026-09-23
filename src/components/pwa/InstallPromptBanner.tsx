@@ -114,10 +114,10 @@ export const InstallPromptBanner: React.FC = () => {
         {!showInstructions ? (
           <>
             {/* Icon & Golden Aura */}
-            <div className="mx-auto relative w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-amber-500 p-[2px] shadow-xl shadow-emerald-500/20 flex items-center justify-center overflow-hidden ring-4 ring-emerald-500/15">
+            <div className="mx-auto relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-amber-500 p-[2px] shadow-lg shadow-emerald-500/20 flex items-center justify-center overflow-hidden ring-2 sm:ring-4 ring-emerald-500/20">
               <img 
                 src="/logo.png" 
-                alt="Sadhana App" 
+                alt="Sadhana" 
                 className="w-full h-full object-cover rounded-full" 
                 onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} 
               />
