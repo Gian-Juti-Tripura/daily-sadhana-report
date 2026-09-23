@@ -3,18 +3,20 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { 
   Award, ChevronLeft, ChevronRight, Save, ShieldCheck, 
-  RotateCcw, Table as TableIcon, Check, RefreshCw,
+  Table as TableIcon, Check, RefreshCw,
   Activity, Sparkles, HeartHandshake, Layers, Calendar as CalendarIcon,
   TrendingUp, Copy, Send, FileText
 } from 'lucide-react';
-import type { CounseleeProfile, MatrixDayEntry, WeeklySadhanaCard } from '../../types/sadhana';
+import type { CounseleeProfile, MatrixDayEntry, WeeklySadhanaCard, DailySadhanaReport } from '../../types/sadhana';
+import { EMPTY_DAY_ENTRY, DEFAULT_UNREPORTED_DAY_ENTRY } from '../../types/sadhana';
 import { SADHANA_SCALES, SCORE_175_CONVERSION_TABLE, convertScoreTo175Pct } from '../../data/sadhanaScalesData';
 import { getRegisteredCounselees, PRIMARY_COUNSELOR } from '../../data/counseleesData';
 import { CounselorSelectorBar } from '../../components/shared/CounselorSelectorBar';
 import { ScaleRulesModal } from '../../components/shared/ScaleRulesModal';
 import { SadhanaHistoryModal } from '../../components/sadhana/SadhanaHistoryModal';
 import { WeeklyReportModal, type WeeklyReportStats } from '../../components/sadhana/WeeklyReportModal';
-import { saveWeeklyCardRecord } from '../../utils/sadhanaCloudSync';
+import { saveWeeklyCardRecord, getDailyReportsHistory, normalizeDateForSort } from '../../utils/sadhanaCloudSync';
+import { calculateDailyReportScore } from '../../utils/sadhanaScoringEngine';
 import { toast } from 'react-hot-toast';
 
 interface DigitalSadhanaCardPageProps {
@@ -32,19 +34,134 @@ const DAYS_OF_WEEK = [
   { key: 'fri', nameEn: 'FRI', nameBn: 'শুক্রবার', fullNameEn: 'Friday' }
 ];
 
-const DEFAULT_SAMPLE_ENTRIES: Record<string, MatrixDayEntry> = {
-  sat: { toBed: '20', wakeUp: '25', dayRest: '25', japa: '25', spBooks: '25', hearing: '5 Hour', studyWork: '30 Min.', cleaning: '30 Min.', followUp: '2 Hour', bbtBtg: '2 BTG', morningClass: '25', sadhanaCard: '25', sloka: 'BG-7/9', bhajanGayatri: '25' },
-  sun: { toBed: '25', wakeUp: '25', dayRest: '00', japa: '20', spBooks: '00', hearing: '00', studyWork: '2 Hour', cleaning: '10 Min.', followUp: '10 Min.', bbtBtg: '00 BTG', morningClass: '25', sadhanaCard: '25', sloka: '-', bhajanGayatri: '25' },
-  mon: { toBed: '25', wakeUp: '20', dayRest: '20', japa: '20', spBooks: '25', hearing: '25', studyWork: '2 Hour', cleaning: '20 Min.', followUp: '20 Min.', bbtBtg: '1 Gita', morningClass: '25', sadhanaCard: '25', sloka: '-', bhajanGayatri: '25' },
-  tue: { toBed: '20', wakeUp: '05', dayRest: '25', japa: '15', spBooks: '25', hearing: '25', studyWork: '2 Hour', cleaning: '00 Min.', followUp: '10 Min.', bbtBtg: '00', morningClass: '00', sadhanaCard: '00', sloka: '-', bhajanGayatri: '00' },
-  wed: { toBed: '15', wakeUp: '25', dayRest: '-5', japa: '05', spBooks: '00', hearing: '00', studyWork: '2 Hour', cleaning: '10 Min.', followUp: '00', bbtBtg: '00', morningClass: '25', sadhanaCard: '25', sloka: '-', bhajanGayatri: '25' },
-  thu: { toBed: '05', wakeUp: '25', dayRest: '20', japa: '20', spBooks: '25', hearing: '25', studyWork: '3 Hour', cleaning: '20 Min.', followUp: '2 Hour', bbtBtg: '1 BTG', morningClass: '25', sadhanaCard: '25', sloka: '-', bhajanGayatri: '00' },
-  fri: { toBed: '25', wakeUp: '25', dayRest: '25', japa: '25', spBooks: '25', hearing: '25', studyWork: '5 Hours', cleaning: '45 Min.', followUp: '3 Hour', bbtBtg: '00', morningClass: '25', sadhanaCard: '25', sloka: 'SB 1/2/3', bhajanGayatri: '25' }
-};
-
 const toBnNum = (n: number | string) => {
   const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
   return String(n).replace(/[0-9]/g, (w) => bnDigits[parseInt(w, 10)]);
+};
+
+export interface WeekDateInfo {
+  key: string;
+  nameEn: string;
+  nameBn: string;
+  fullNameEn: string;
+  date: string;
+  fullDate: string;
+  isoDate: string;
+  isFuture: boolean;
+  isToday: boolean;
+  isPast: boolean;
+}
+
+export const getWeekDates = (offset: number): WeekDateInfo[] => {
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset * 7);
+  const dayOfWeek = target.getDay(); // 0 is Sunday, 6 is Saturday
+  const diffToSat = (dayOfWeek + 1) % 7; 
+  const saturday = new Date(target.getFullYear(), target.getMonth(), target.getDate() - diffToSat);
+  saturday.setHours(0, 0, 0, 0);
+
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  return DAYS_OF_WEEK.map((d, index) => {
+    const dt = new Date(saturday.getFullYear(), saturday.getMonth(), saturday.getDate() + index);
+    dt.setHours(0, 0, 0, 0);
+    const dayMidnight = dt.getTime();
+    const isFuture = dayMidnight > todayMidnight;
+    const isToday = dayMidnight === todayMidnight;
+    const isPast = dayMidnight < todayMidnight;
+
+    const dayNum = dt.getDate();
+    const monthNum = dt.getMonth() + 1;
+    const yearNum = dt.getFullYear();
+    const dateStr = `${dayNum}/${monthNum}`;
+    const isoDate = `${yearNum}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+    const fullDate = `${dayNum}/${monthNum}/${yearNum}`;
+
+    return {
+      key: d.key,
+      nameEn: d.nameEn,
+      nameBn: d.nameBn,
+      fullNameEn: d.fullNameEn,
+      date: dateStr,
+      fullDate,
+      isoDate,
+      isFuture,
+      isToday,
+      isPast
+    };
+  });
+};
+
+export const buildProgressingWeekMatrix = (
+  devoteeId: string,
+  dates: WeekDateInfo[],
+  scaleId: 1 | 2 | 3 | 4,
+  savedMatrix?: Record<string, MatrixDayEntry> | null
+): Record<string, MatrixDayEntry> => {
+  const history = getDailyReportsHistory(devoteeId);
+  const reportsByDate: Record<string, DailySadhanaReport> = {};
+  history.forEach(item => {
+    if (item.rawDate) reportsByDate[item.rawDate] = item.data;
+    if (item.date) {
+      reportsByDate[normalizeDateForSort(item.date)] = item.data;
+      reportsByDate[item.date] = item.data;
+    }
+  });
+
+  const pad2 = (n: number) => {
+    if (n <= 0) return '00';
+    return n < 10 ? `0${n}` : `${n}`;
+  };
+
+  const result: Record<string, MatrixDayEntry> = {};
+
+  dates.forEach(d => {
+    if (d.isFuture) {
+      // Future days must strictly remain empty
+      result[d.key] = { ...EMPTY_DAY_ENTRY };
+    } else {
+      // Elapsed day (past or today): check for daily report
+      let report = reportsByDate[d.isoDate] || reportsByDate[d.fullDate] || reportsByDate[d.date];
+      if (!report) {
+        const k1 = `sadhana_report_${devoteeId}_${d.fullDate.replace(/\//g, '-')}`;
+        const k2 = `sadhana_report_${devoteeId}_${d.isoDate}`;
+        const raw = localStorage.getItem(k1) || localStorage.getItem(k2);
+        if (raw) {
+          try {
+            report = JSON.parse(raw);
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+
+      if (report) {
+        const score = calculateDailyReportScore(report, scaleId);
+        result[d.key] = {
+          toBed: pad2(score.wentToBedMarks),
+          wakeUp: pad2(score.wakeUpMarks),
+          dayRest: score.daySleepMarks < 0 ? `${score.daySleepMarks}` : pad2(score.daySleepMarks),
+          japa: pad2(score.japaMarks),
+          spBooks: pad2(score.bookStudyMarks),
+          hearing: pad2(score.hearingMarks),
+          studyWork: report.academicStudyHours > 0 ? `${report.academicStudyHours} Hour` : '0 Hour',
+          cleaning: report.renderedSeva && report.renderedSeva !== 'Custom (অন্যান্য)' ? report.renderedSeva.slice(0, 25) : 'Ashram Seva',
+          followUp: '10 Min.',
+          bbtBtg: '00',
+          morningClass: pad2(score.morningProgramMarks),
+          sadhanaCard: '25',
+          sloka: report.slokaMemorizingCount > 0 ? 'BG-Done' : '-',
+          bhajanGayatri: report.bhajanGayatriCompleted ? '25' : '00'
+        };
+      } else if (savedMatrix && savedMatrix[d.key] && savedMatrix[d.key].toBed !== undefined && savedMatrix[d.key].toBed !== '') {
+        result[d.key] = { ...savedMatrix[d.key] };
+      } else {
+        result[d.key] = { ...DEFAULT_UNREPORTED_DAY_ENTRY };
+      }
+    }
+  });
+
+  return result;
 };
 
 export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
@@ -73,58 +190,33 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
   const [othersSummary] = useState('Good');
 
   // Compute dates for current Saturday-to-Friday week
-  const weekDates = useMemo(() => {
-    const today = new Date();
-    today.setDate(today.getDate() + weekOffset * 7);
-    const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
-    const diffToSat = (dayOfWeek + 1) % 7; 
-    const saturday = new Date(today);
-    saturday.setDate(today.getDate() - diffToSat);
+  const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
 
-    return DAYS_OF_WEEK.map((d, index) => {
-      const dt = new Date(saturday);
-      dt.setDate(saturday.getDate() + index);
-      const dateStr = `${dt.getDate()}/${dt.getMonth() + 1}`;
-      return {
-        key: d.key,
-        nameEn: d.nameEn,
-        nameBn: d.nameBn,
-        fullNameEn: d.fullNameEn,
-        date: dateStr
-      };
-    });
-  }, [weekOffset]);
-
-  // Matrix entries state for 7 days
+  // Matrix entries state for 7 days (auto-filled progressing card)
   const [matrixEntries, setMatrixEntries] = useState<Record<string, MatrixDayEntry>>(() => {
-    const saved = localStorage.getItem(`weekly_matrix_${activeDevotee.id}_offset_${weekOffset}`);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // fallback
-      }
-    }
-    return DEFAULT_SAMPLE_ENTRIES;
+    const dates = getWeekDates(0);
+    return buildProgressingWeekMatrix(activeDevotee.id, dates, selectedScale);
   });
 
   // Auto-save status state
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
   const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
 
-  // Reload saved matrix and meta if activeDevotee or weekOffset changes
+  // Reload progressing matrix and remarks if activeDevotee or weekOffset changes
   useEffect(() => {
     setIsInitialLoadDone(false);
+    let savedParsed: Record<string, MatrixDayEntry> | null = null;
     const saved = localStorage.getItem(`weekly_matrix_${activeDevotee.id}_offset_${weekOffset}`);
     if (saved) {
       try {
-        setMatrixEntries(JSON.parse(saved));
+        savedParsed = JSON.parse(saved);
       } catch (e) {
-        setMatrixEntries(DEFAULT_SAMPLE_ENTRIES);
+        savedParsed = null;
       }
-    } else {
-      setMatrixEntries(DEFAULT_SAMPLE_ENTRIES);
     }
+
+    const progressingMatrix = buildProgressingWeekMatrix(activeDevotee.id, weekDates, selectedScale, savedParsed);
+    setMatrixEntries(progressingMatrix);
 
     const savedMeta = localStorage.getItem(`weekly_meta_${activeDevotee.id}_offset_${weekOffset}`);
     if (savedMeta) {
@@ -144,7 +236,7 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
       setSaveStatus('saved');
     }, 150);
     return () => clearTimeout(timer);
-  }, [activeDevotee.id, weekOffset]);
+  }, [activeDevotee.id, weekOffset, selectedScale, weekDates]);
 
   // Debounced auto-save effect whenever matrix or remarks change
   useEffect(() => {
@@ -217,64 +309,88 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
     return isNaN(num) ? 0 : num;
   };
 
-  // 175-mark column calculations (7 days * 25 max marks = 175 per scored column)
+  // Progression & 175-mark column calculations
   const columnCalculations = useMemo(() => {
     const dayKeys = DAYS_OF_WEEK.map(d => d.key);
+    const elapsedDays = weekDates.filter(d => !d.isFuture);
+    const elapsedDaysCount = elapsedDays.length; // 0 to 7
+    const isAllFuture = elapsedDaysCount === 0;
+
+    // For elapsed progression: max marks per column = elapsedDaysCount * 25
+    const colMaxMarks = elapsedDaysCount > 0 ? elapsedDaysCount * 25 : 175;
 
     const calcCol = (field: keyof MatrixDayEntry) => {
       const total = dayKeys.reduce((sum, key) => sum + parseCellMark(matrixEntries[key]?.[field] || '0'), 0);
-      const pct = convertScoreTo175Pct(total);
-      return { total, pct };
+      const progressionPct = colMaxMarks > 0 ? Math.min(100, Math.max(0, Math.round((total / colMaxMarks) * 100))) : 0;
+      const fullWeekPct = convertScoreTo175Pct(total);
+      return { total, progressionPct, fullWeekPct, maxMarks: colMaxMarks };
     };
 
     // Body
     const toBed = calcCol('toBed');
     const wakeUp = calcCol('wakeUp');
     const dayRest = calcCol('dayRest');
-    const bodyAvgPct = Math.round((toBed.pct + wakeUp.pct + dayRest.pct) / 3);
+    const bodyAvgPct = Math.round((toBed.progressionPct + wakeUp.progressionPct + dayRest.progressionPct) / 3);
+    const bodyFullWeekAvgPct = Math.round((toBed.fullWeekPct + wakeUp.fullWeekPct + dayRest.fullWeekPct) / 3);
 
     // Soul
     const japa = calcCol('japa');
     const spBooks = calcCol('spBooks');
     const hearing = calcCol('hearing');
-    const soulAvgPct = Math.round((japa.pct + spBooks.pct + hearing.pct) / 3);
+    const soulAvgPct = Math.round((japa.progressionPct + spBooks.progressionPct + hearing.progressionPct) / 3);
+    const soulFullWeekAvgPct = Math.round((japa.fullWeekPct + spBooks.fullWeekPct + hearing.fullWeekPct) / 3);
 
     // Others
     const morningClass = calcCol('morningClass');
     const sadhanaCard = calcCol('sadhanaCard');
     const bhajanGayatri = calcCol('bhajanGayatri');
-    const othersAvgPct = Math.round((morningClass.pct + sadhanaCard.pct + bhajanGayatri.pct) / 3);
+    const othersAvgPct = Math.round((morningClass.progressionPct + sadhanaCard.progressionPct + bhajanGayatri.progressionPct) / 3);
+    const othersFullWeekAvgPct = Math.round((morningClass.fullWeekPct + sadhanaCard.fullWeekPct + bhajanGayatri.fullWeekPct) / 3);
 
     // Sum of all 9 numerically scored columns
     const totalScoredMarks = toBed.total + wakeUp.total + dayRest.total +
                              japa.total + spBooks.total + hearing.total +
                              morningClass.total + sadhanaCard.total + bhajanGayatri.total;
     
-    // Max marks = 9 columns * 175 = 1575 marks
-    const maxWeeklyScoredMarks = 9 * 175;
-    const overallPercentage = Math.max(0, Math.min(100, Math.round((totalScoredMarks / maxWeeklyScoredMarks) * 100)));
+    // Max scored marks for elapsed days (9 columns * 25 marks = 225 marks/day)
+    const maxScoredMarks = elapsedDaysCount > 0 ? elapsedDaysCount * (9 * 25) : (7 * 9 * 25);
+    const maxWeeklyScoredMarks = 9 * 175; // 1575 marks
+    const overallProgressionPct = maxScoredMarks > 0
+      ? Math.min(100, Math.max(0, Math.round((totalScoredMarks / maxScoredMarks) * 100)))
+      : 0;
+    const overallFullWeekPct = Math.min(100, Math.max(0, Math.round((totalScoredMarks / maxWeeklyScoredMarks) * 100)));
+    const dailyAverageMarks = elapsedDaysCount > 0 ? Math.round(totalScoredMarks / elapsedDaysCount) : 0;
 
     return {
+      elapsedDaysCount,
+      isAllFuture,
       toBed,
       wakeUp,
       dayRest,
       bodyAvgPct,
+      bodyFullWeekAvgPct,
       bodyTotalMarks: toBed.total + wakeUp.total + dayRest.total,
       japa,
       spBooks,
       hearing,
       soulAvgPct,
+      soulFullWeekAvgPct,
       soulTotalMarks: japa.total + spBooks.total + hearing.total,
       morningClass,
       sadhanaCard,
       bhajanGayatri,
       othersAvgPct,
+      othersFullWeekAvgPct,
       othersTotalMarks: morningClass.total + sadhanaCard.total + bhajanGayatri.total,
       totalScoredMarks,
+      maxScoredMarks,
       maxWeeklyScoredMarks,
-      overallPercentage
+      overallProgressionPct,
+      overallFullWeekPct,
+      overallPercentage: overallProgressionPct,
+      dailyAverageMarks
     };
-  }, [matrixEntries]);
+  }, [matrixEntries, weekDates]);
 
   const activeScaleInfo = SADHANA_SCALES[selectedScale];
   const [isWeeklyReportModalOpen, setIsWeeklyReportModalOpen] = useState(false);
@@ -317,26 +433,27 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
 
     const spHoursCalc = columnCalculations.spBooks.total > 0 
       ? (Math.round((columnCalculations.spBooks.total / 70) * 10) / 10).toFixed(1)
-      : '2.5';
+      : '0.0';
 
     return {
-      matHours: matHoursTotal > 0 ? (matHoursTotal % 1 === 0 ? matHoursTotal.toString() : matHoursTotal.toFixed(1)) : '40',
-      bodyPct: columnCalculations.bodyAvgPct > 0 ? columnCalculations.bodyAvgPct.toFixed(2) : '60.29',
-      soulPct: columnCalculations.soulAvgPct > 0 ? columnCalculations.soulAvgPct.toFixed(2) : '75.26',
-      spHours: parseFloat(spHoursCalc) > 0 ? spHoursCalc : '2.5',
-      spBookRef: spBookRefFound || 'Śrīmad-Bhāgavatam 3.27.10',
-      lectHours: lectHoursTotal > 0 ? (lectHoursTotal % 1 === 0 ? lectHoursTotal.toString() : lectHoursTotal.toFixed(1)) : '6',
+      matHours: matHoursTotal > 0 ? (matHoursTotal % 1 === 0 ? matHoursTotal.toString() : matHoursTotal.toFixed(1)) : '0',
+      bodyPct: columnCalculations.bodyAvgPct > 0 ? columnCalculations.bodyAvgPct.toFixed(2) : '0.00',
+      soulPct: columnCalculations.soulAvgPct > 0 ? columnCalculations.soulAvgPct.toFixed(2) : '0.00',
+      spHours: parseFloat(spHoursCalc) > 0 ? spHoursCalc : '0.0',
+      spBookRef: spBookRefFound || '—',
+      lectHours: lectHoursTotal > 0 ? (lectHoursTotal % 1 === 0 ? lectHoursTotal.toString() : lectHoursTotal.toFixed(1)) : '0',
       slokaText: slokasFound.length > 0
         ? `Yes — “${slokasFound[0]}”`
-        : 'Yes — “Vidyā vivādāya dhanaṁ madāya...” (Śrīmad-Bhāgavatam 4.22.24)'
+        : '—'
     };
   }, [matrixEntries, columnCalculations]);
 
   const generateWeeklyReportText = () => {
     return `🌿 Hare Krishna. 🙏
 
-This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].date}:
+This is *${activeDevotee.name}.* Here is my weekly progression report for ${weekDates[0].date}:
 
+📊 *Progression:* ${columnCalculations.elapsedDaysCount}/7 days elapsed (${columnCalculations.overallProgressionPct}%)
 📚 *Material Study:* ${weeklyStats.matHours} hours
 💪 *Body:* ${weeklyStats.bodyPct}%
 🕉️ *Soul:* ${weeklyStats.soulPct}%
@@ -411,9 +528,15 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
     );
   };
 
-  const handleResetToSample = () => {
-    setMatrixEntries(DEFAULT_SAMPLE_ENTRIES);
-    toast.success(language === 'bn' ? 'নমুনা ছক পুনরুদ্ধার করা হয়েছে।' : 'Sample matrix restored.');
+  const handleSyncWithDailyReports = () => {
+    const refreshed = buildProgressingWeekMatrix(activeDevotee.id, weekDates, selectedScale, null);
+    setMatrixEntries(refreshed);
+    localStorage.setItem(`weekly_matrix_${activeDevotee.id}_offset_${weekOffset}`, JSON.stringify(refreshed));
+    toast.success(
+      language === 'bn' 
+        ? 'দৈনিক রিপোর্ট ও ডিফল্ট মান সহ সাধনাপত্র সিঙ্ক সম্পন্ন!' 
+        : 'Sadhana card synced with daily reports and baseline defaults!'
+    );
   };
 
   return (
@@ -431,12 +554,25 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
       <div className={`bg-gradient-to-r ${styles.bannerGradient} rounded-2xl p-3 sm:p-4 text-white shadow-md shadow-amber-600/10 space-y-2.5 sm:space-y-3`}>
         {/* Header Row: Compact Title, Scale Badge & Archive Button in 1 line */}
         <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
             <h2 className="text-sm sm:text-base md:text-lg font-black tracking-tight truncate">
-              {language === 'bn' ? '১৭৫ সাপ্তাহিক সাধনাপত্র ছক (শনি—শুক্র)' : '175 Weekly Sadhana Matrix (Sat–Fri)'}
+              {language === 'bn' ? '১৭৫ সাপ্তাহিক সাধনাপত্র (শনি—শুক্র)' : '175 Weekly Sadhana Matrix (Sat–Fri)'}
             </h2>
-            <span className="text-[10px] sm:text-xs font-bold bg-black/30 text-amber-200 px-2 py-0.5 rounded-full border border-white/10 shrink-0">
+            <span className="text-[10px] sm:text-xs font-bold bg-black/30 text-amber-200 px-2 py-0.5 rounded border border-white/10 shrink-0">
               Scale {selectedScale}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-amber-300/40 bg-black/30 text-amber-200 text-[10px] sm:text-[11px] font-mono font-bold">
+              <span>
+                {language === 'bn'
+                  ? `[ ${toBnNum(columnCalculations.elapsedDaysCount)} / ৭ দিন ]`
+                  : `[ ${columnCalculations.elapsedDaysCount} / 7 Days ]`}
+              </span>
+              <span className="text-white/60">•</span>
+              <span>
+                {language === 'bn'
+                  ? `অগ্রগতি: ${toBnNum(columnCalculations.overallProgressionPct)}%`
+                  : `Progress: ${columnCalculations.overallProgressionPct}%`}
+              </span>
             </span>
           </div>
 
@@ -452,24 +588,23 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
 
         {/* 5 Distinct Mini-Stat Boxes (Always 5-column row, compact and colorful) */}
         <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
-          {/* 1. Average (Gold/Amber Jewel Box) */}
+          {/* 1. Progression Average (Gold/Amber Jewel Box) */}
           <div className="bg-gradient-to-br from-amber-500/30 to-amber-900/40 border border-amber-300/40 hover:border-amber-300/80 rounded-xl p-2 sm:p-2.5 backdrop-blur-md flex flex-col justify-between transition-all shadow-xs hover:shadow-amber-500/20 group">
             <div className="flex items-center justify-between gap-1 text-[10px] sm:text-xs font-bold text-amber-200">
               <span className="flex items-center gap-1 truncate">
                 <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300 shrink-0 group-hover:scale-110 transition-transform" />
                 <span className="truncate">
-                  {language === 'bn' ? 'গড়' : 'Avg'}
-                  <span className="hidden sm:inline">{language === 'bn' ? ' অর্জন' : ' Score'}</span>
+                  {language === 'bn' ? 'চলতি অগ্রগতি' : 'Progress Avg'}
                 </span>
               </span>
               <span className={`px-1 py-0.2 rounded text-[9px] font-black shrink-0 ${
-                columnCalculations.overallPercentage >= 85 ? 'bg-emerald-400 text-slate-950' : columnCalculations.overallPercentage >= 70 ? 'bg-amber-300 text-slate-950' : 'bg-rose-400 text-white'
+                columnCalculations.overallProgressionPct >= 85 ? 'bg-emerald-400 text-slate-950' : columnCalculations.overallProgressionPct >= 70 ? 'bg-amber-300 text-slate-950' : 'bg-rose-400 text-white'
               }`}>
-                {columnCalculations.overallPercentage >= 85 ? 'A+' : columnCalculations.overallPercentage >= 70 ? 'A' : 'B'}
+                {columnCalculations.overallProgressionPct >= 85 ? 'A+' : columnCalculations.overallProgressionPct >= 70 ? 'A' : 'B'}
               </span>
             </div>
             <div className="text-sm sm:text-xl font-black text-amber-100 mt-1 tracking-tight">
-              {language === 'bn' ? `${toBnNum(columnCalculations.overallPercentage)}%` : `${columnCalculations.overallPercentage}%`}
+              {columnCalculations.isAllFuture ? '—' : `${language === 'bn' ? toBnNum(columnCalculations.overallProgressionPct) : columnCalculations.overallProgressionPct}%`}
             </div>
           </div>
 
@@ -479,11 +614,10 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
               <Activity className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="truncate">
                 {language === 'bn' ? 'দেহ' : 'Body'}
-                <span className="hidden sm:inline"> (Body)</span>
               </span>
             </div>
             <div className="text-sm sm:text-xl font-black text-emerald-100 mt-1 tracking-tight">
-              {language === 'bn' ? `${toBnNum(columnCalculations.bodyAvgPct)}%` : `${columnCalculations.bodyAvgPct}%`}
+              {columnCalculations.isAllFuture ? '—' : `${language === 'bn' ? toBnNum(columnCalculations.bodyAvgPct) : columnCalculations.bodyAvgPct}%`}
             </div>
           </div>
 
@@ -493,11 +627,10 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="truncate">
                 {language === 'bn' ? 'আত্মা' : 'Soul'}
-                <span className="hidden sm:inline"> (Soul)</span>
               </span>
             </div>
             <div className="text-sm sm:text-xl font-black text-purple-100 mt-1 tracking-tight">
-              {language === 'bn' ? `${toBnNum(columnCalculations.soulAvgPct)}%` : `${columnCalculations.soulAvgPct}%`}
+              {columnCalculations.isAllFuture ? '—' : `${language === 'bn' ? toBnNum(columnCalculations.soulAvgPct) : columnCalculations.soulAvgPct}%`}
             </div>
           </div>
 
@@ -507,7 +640,6 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
               <HeartHandshake className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="truncate">
                 {language === 'bn' ? 'সেবা' : 'Seva'}
-                <span className="hidden sm:inline"> (Seva)</span>
               </span>
             </div>
             <div className="text-xs sm:text-lg font-black text-rose-100 mt-1 truncate tracking-tight">
@@ -521,11 +653,10 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
               <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="truncate">
                 {language === 'bn' ? 'অন্যান্য' : 'Others'}
-                <span className="hidden sm:inline"> (Others)</span>
               </span>
             </div>
             <div className="text-sm sm:text-xl font-black text-sky-100 mt-1 tracking-tight">
-              {language === 'bn' ? `${toBnNum(columnCalculations.othersAvgPct)}%` : `${columnCalculations.othersAvgPct}%`}
+              {columnCalculations.isAllFuture ? '—' : `${language === 'bn' ? toBnNum(columnCalculations.othersAvgPct) : columnCalculations.othersAvgPct}%`}
             </div>
           </div>
         </div>
@@ -577,7 +708,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
             
             <div className="px-3 py-1 bg-amber-50 dark:bg-slate-800 rounded-xl border border-amber-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 font-mono">
               <span>{weekDates[0].date} — {weekDates[6].date}</span>
-              {weekOffset === 0 && <span className="ml-1.5 text-amber-600 dark:text-amber-400 font-semibold font-sans">(Current)</span>}
+              {weekOffset === 0 && <span className="ml-1.5 text-amber-600 dark:text-amber-400 font-semibold font-sans">{language === 'bn' ? '(চলতি সপ্তাহ)' : '(Current)'}</span>}
             </div>
 
             <button
@@ -651,12 +782,12 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
 
           <button
             type="button"
-            onClick={handleResetToSample}
-            className="py-1.5 px-3 rounded-lg bg-slate-50 hover:bg-rose-50 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-600 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-            title={language === 'bn' ? 'নমুনা ছক পুনরুদ্ধার' : 'Reset sample data'}
+            onClick={handleSyncWithDailyReports}
+            className="py-1.5 px-3 rounded-lg bg-slate-50 hover:bg-emerald-50 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-700 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            title={language === 'bn' ? 'দৈনিক রিপোর্ট থেকে সিঙ্ক করুন' : 'Sync from Daily Reports'}
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-            <span>{language === 'bn' ? 'নমুনা' : 'Sample'}</span>
+            <RefreshCw className="w-3.5 h-3.5 text-emerald-600" />
+            <span>{language === 'bn' ? 'রিপোর্ট সিঙ্ক' : 'Sync Reports'}</span>
           </button>
 
         </div>
@@ -732,16 +863,16 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                   {language === 'bn' ? 'দিন / বার' : 'DAY'}
                 </th>
                 <th colSpan={3} className="p-2 border border-white/20 bg-black/15">
-                  {language === 'bn' ? '১. দেহ (BODY)' : 'BODY'}
+                  {language === 'bn' ? '১. দেহ' : '1. BODY'}
                 </th>
                 <th colSpan={3} className="p-2 border border-white/20 bg-black/25">
-                  {language === 'bn' ? '২. আত্মা (SOUL)' : 'SOUL'}
+                  {language === 'bn' ? '২. আত্মা' : '2. SOUL'}
                 </th>
                 <th colSpan={4} className="p-2 border border-white/20 bg-black/15">
-                  {language === 'bn' ? '৩. সেবা (SEVA IN MINUTE/HOUR)' : 'SEVA (IN MINUTE/HOUR)'}
+                  {language === 'bn' ? '৩. সেবা' : '3. SEVA'}
                 </th>
                 <th colSpan={4} className="p-2 border border-white/20 bg-black/25">
-                  {language === 'bn' ? '৪. অন্যান্য (OTHERS)' : 'OTHERS'}
+                  {language === 'bn' ? '৪. অন্যান্য' : '4. OTHERS'}
                 </th>
               </tr>
 
@@ -803,7 +934,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
               
               {/* 7 DAY ROWS: SAT, SUN, MON, TUE, WED, THU, FRI */}
               {weekDates.map((d, index) => {
-                const row = matrixEntries[d.key] || DEFAULT_SAMPLE_ENTRIES[d.key];
+                const row = matrixEntries[d.key] || (d.isFuture ? EMPTY_DAY_ENTRY : DEFAULT_UNREPORTED_DAY_ENTRY);
                 const isEven = index % 2 === 0;
 
                 return (
@@ -814,13 +945,37 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                     }`}
                   >
                     {/* Day Name & Date */}
-                    <td className="p-1.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-center min-w-[65px]">
-                      <div className="font-black text-[13px] text-[#7B0025] dark:text-rose-400 tracking-wide leading-tight">
+                    <td className={`p-1.5 border border-slate-300 dark:border-slate-700 text-center min-w-[65px] ${
+                      d.isFuture ? 'bg-slate-100/50 dark:bg-slate-800/30' : d.isToday ? 'bg-amber-50/80 dark:bg-amber-950/30' : 'bg-slate-50 dark:bg-slate-800/60'
+                    }`}>
+                      <div className={`font-black text-[13px] tracking-wide leading-tight ${
+                        d.isFuture ? 'text-slate-400 dark:text-slate-500' : d.isToday ? 'text-amber-800 dark:text-amber-300' : 'text-[#7B0025] dark:text-rose-400'
+                      }`}>
                         {language === 'bn' ? d.nameBn : d.nameEn}
                       </div>
-                      <div className="mt-0.5 inline-block bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] px-1.5 py-0.5 rounded-md leading-tight">
+                      <div className={`mt-0.5 inline-block font-bold text-[11px] px-1.5 py-0.5 rounded leading-tight ${
+                        d.isFuture
+                          ? 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500 font-mono'
+                          : d.isToday
+                          ? 'bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                      }`}>
                         {d.date}
                       </div>
+                      {d.isFuture && (
+                        <div className="mt-0.5">
+                          <span className="inline-block text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                            {language === 'bn' ? 'আসন্ন' : 'Upcoming'}
+                          </span>
+                        </div>
+                      )}
+                      {d.isToday && (
+                        <div className="mt-0.5">
+                          <span className="inline-block text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500 text-white shadow-2xs">
+                            {language === 'bn' ? 'আজ' : 'Today'}
+                          </span>
+                        </div>
+                      )}
                     </td>
 
                     {/* BODY */}
@@ -828,24 +983,33 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                       <input
                         type="text"
                         value={row.toBed}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'toBed', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.wakeUp}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'wakeUp', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.dayRest}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'dayRest', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
 
@@ -854,24 +1018,33 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                       <input
                         type="text"
                         value={row.japa}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'japa', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.spBooks}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'spBooks', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.hearing}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'hearing', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
 
@@ -880,32 +1053,44 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                       <input
                         type="text"
                         value={row.studyWork}
+                        placeholder={d.isFuture ? '—' : '0 Hour'}
                         onChange={(e) => updateCell(d.key, 'studyWork', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.cleaning}
+                        placeholder={d.isFuture ? '—' : '-'}
                         onChange={(e) => updateCell(d.key, 'cleaning', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.followUp}
+                        placeholder={d.isFuture ? '—' : '-'}
                         onChange={(e) => updateCell(d.key, 'followUp', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.bbtBtg}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'bbtBtg', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
 
@@ -914,42 +1099,57 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                       <input
                         type="text"
                         value={row.morningClass}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'morningClass', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.sadhanaCard}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'sadhanaCard', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.sloka}
+                        placeholder={d.isFuture ? '—' : '-'}
                         onChange={(e) => updateCell(d.key, 'sloka', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs font-mono"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-semibold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs font-mono ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                     <td className="p-0.5 border border-slate-300 dark:border-slate-700">
                       <input
                         type="text"
                         value={row.bhajanGayatri}
+                        placeholder={d.isFuture ? '—' : '00'}
                         onChange={(e) => updateCell(d.key, 'bhajanGayatri', e.target.value)}
-                        className="w-full text-center py-1.5 px-0.5 bg-transparent text-slate-900 dark:text-slate-100 font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs"
+                        className={`w-full text-center py-1.5 px-0.5 bg-transparent font-bold focus:bg-amber-50 dark:focus:bg-slate-800 focus:outline-hidden text-xs ${
+                          d.isFuture ? 'text-slate-400 dark:text-slate-500 placeholder:text-slate-300 dark:placeholder:text-slate-700' : 'text-slate-900 dark:text-slate-100'
+                        }`}
                       />
                     </td>
                   </tr>
                 );
               })}
 
-              {/* ROW 8: TOTAL (Sum of each column over 7 days, out of 175 marks) */}
+              {/* ROW 8: TOTAL (Sum of each column over elapsed days) */}
               <tr className="bg-slate-100 dark:bg-slate-800/90 font-extrabold text-slate-900 dark:text-white">
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-left font-black tracking-wider uppercase bg-slate-200/80 dark:bg-slate-800">
-                  {language === 'bn' ? 'মোট (TOTAL)' : 'TOTAL'}
+                  <div className="leading-tight">{language === 'bn' ? 'মোট' : 'TOTAL'}</div>
+                  <div className="text-[10px] font-mono text-slate-500 font-normal">
+                    {language === 'bn' ? `(সর্বোচ্চ ${toBnNum(columnCalculations.toBed.maxMarks)})` : `(Max ${columnCalculations.toBed.maxMarks})`}
+                  </div>
                 </td>
 
                 {/* BODY */}
@@ -974,18 +1174,18 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                   {columnCalculations.hearing.total}
                 </td>
 
-                {/* SEVA (Totals in hours / min) */}
+                {/* SEVA (Dynamic totals in hours / min) */}
                 <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-center text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                  21 Hours
+                  {weeklyStats.matHours !== '0' ? `${weeklyStats.matHours} ${language === 'bn' ? 'ঘণ্টা' : 'Hours'}` : '—'}
                 </td>
                 <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-center text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                  125 Min.
+                  {sevaSummary || (language === 'bn' ? 'উত্তম' : 'Good')}
                 </td>
                 <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-center text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                  7.8 Hours
+                  —
                 </td>
                 <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-center text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                  3 BTG, 1 Gita
+                  {weeklyStats.spBookRef !== '—' ? weeklyStats.spBookRef : '—'}
                 </td>
 
                 {/* OTHERS */}
@@ -995,61 +1195,88 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">
                   {columnCalculations.sadhanaCard.total}
                 </td>
-                <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-center text-[10px] text-slate-500 font-semibold">
-                  2 Slokas
+                <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-center text-[10px] text-slate-500 font-semibold truncate max-w-[75px]" title={weeklyStats.slokaText}>
+                  {weeklyStats.slokaText !== '—' ? weeklyStats.slokaText : '—'}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">
                   {columnCalculations.bhajanGayatri.total}
                 </td>
               </tr>
 
-              {/* ROW 9: % (Column Percentage out of 175 marks) */}
+              {/* ROW 9: % (Progression Percentage out of elapsed days) */}
               <tr className="bg-amber-50/80 dark:bg-amber-950/40 font-black text-amber-900 dark:text-amber-200">
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-left font-black tracking-wider uppercase bg-amber-100/60 dark:bg-amber-950/60">
-                  % (175 Marks)
+                  <div className="leading-tight text-amber-900 dark:text-amber-200">
+                    {language === 'bn' ? '% অগ্রগতি' : '% PROGRESS'}
+                  </div>
+                  <div className="text-[10px] font-mono text-amber-700 dark:text-amber-400 font-normal">
+                    {language === 'bn' ? `(${toBnNum(columnCalculations.elapsedDaysCount)} দিন)` : `(${columnCalculations.elapsedDaysCount} Days)`}
+                  </div>
                 </td>
 
                 {/* BODY */}
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.toBed.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.toBed.progressionPct}%`}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.wakeUp.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.wakeUp.progressionPct}%`}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.dayRest.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.dayRest.progressionPct}%`}
                 </td>
 
                 {/* SOUL */}
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.japa.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.japa.progressionPct}%`}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.spBooks.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.spBooks.progressionPct}%`}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.hearing.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.hearing.progressionPct}%`}
                 </td>
 
                 {/* SEVA */}
                 <td colSpan={4} className="p-2 border border-slate-300 dark:border-slate-700 text-center font-bold text-amber-700 dark:text-amber-300">
-                  {sevaSummary}
+                  {sevaSummary || (language === 'bn' ? 'উত্তম' : 'Good')}
                 </td>
 
                 {/* OTHERS */}
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.morningClass.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.morningClass.progressionPct}%`}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.sadhanaCard.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.sadhanaCard.progressionPct}%`}
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center text-slate-500 font-bold">
                   —
                 </td>
                 <td className="p-2 border border-slate-300 dark:border-slate-700 text-center">
-                  {columnCalculations.bhajanGayatri.pct}%
+                  {columnCalculations.isAllFuture ? '—' : `${columnCalculations.bhajanGayatri.progressionPct}%`}
                 </td>
               </tr>
+
+              {/* ROW 10: Full 175-Scale Reference (shown when week is progressing) */}
+              {columnCalculations.elapsedDaysCount < 7 && (
+                <tr className="bg-slate-50/80 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 font-bold text-[11px]">
+                  <td className="p-1.5 border border-slate-300 dark:border-slate-700 text-left uppercase bg-slate-100 dark:bg-slate-800 text-[10px]">
+                    {language === 'bn' ? '% ১৭৫ স্কেল (লক্ষ্য)' : '% 175 SCALE (Goal)'}
+                  </td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.toBed.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.wakeUp.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.dayRest.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.japa.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.spBooks.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.hearing.fullWeekPct}%</td>
+                  <td colSpan={4} className="p-1 border border-slate-300 dark:border-slate-700 text-center text-[10px]">
+                    {language === 'bn' ? '১৭৫ স্কেল লক্ষ্য' : '175 Scale Goal'}
+                  </td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.morningClass.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.sadhanaCard.fullWeekPct}%</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">—</td>
+                  <td className="p-1 border border-slate-300 dark:border-slate-700 text-center font-mono">{columnCalculations.bhajanGayatri.fullWeekPct}%</td>
+                </tr>
+              )}
 
             </tbody>
           </table>
@@ -1061,7 +1288,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
             <span className="flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span className="font-extrabold uppercase tracking-wide">
-                {language === 'bn' ? '১৭৫ নম্বর রূপান্তর সারণি (Score & % Reference)' : '175 Matrix Score & % Reference Scale'}
+                {language === 'bn' ? '১৭৫ নম্বর রূপান্তর সারণি' : '175 Matrix Score & % Reference Scale'}
               </span>
             </span>
             <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono font-bold">
@@ -1102,7 +1329,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
             <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
-                {language === 'bn' ? 'দেহ (BODY)' : 'BODY'}
+                {language === 'bn' ? 'দেহ' : 'BODY'}
               </span>
               <span className="text-lg font-black text-amber-600 dark:text-amber-400">
                 {columnCalculations.bodyAvgPct}%
@@ -1111,7 +1338,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
 
             <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
-                {language === 'bn' ? 'আত্মা (SOUL)' : 'SOUL'}
+                {language === 'bn' ? 'আত্মা' : 'SOUL'}
               </span>
               <span className="text-lg font-black text-amber-600 dark:text-amber-400">
                 {columnCalculations.soulAvgPct}%
@@ -1120,7 +1347,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
 
             <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
-                {language === 'bn' ? 'সেবা (SEVA)' : 'SEVA'}
+                {language === 'bn' ? 'সেবা' : 'SEVA'}
               </span>
               <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
                 {sevaSummary}
@@ -1129,7 +1356,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
 
             <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xs">
               <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
-                {language === 'bn' ? 'অন্যান্য (OTHERS)' : 'OTHERS'}
+                {language === 'bn' ? 'অন্যান্য' : 'OTHERS'}
               </span>
               <span className="text-lg font-black text-purple-600 dark:text-purple-400">
                 {othersSummary} ({columnCalculations.othersAvgPct}%)
@@ -1142,7 +1369,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-amber-600" />
-                <span>{language === 'bn' ? '১. আধ্যাত্মিক পর্যবেক্ষণ (Observation):' : '1. OBSERVATION & DIAGNOSIS:'}</span>
+                <span>{language === 'bn' ? '১. আধ্যাত্মিক পর্যবেক্ষণ:' : '1. OBSERVATION:'}</span>
               </label>
               <textarea
                 rows={2}
@@ -1156,7 +1383,7 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-amber-600" />
-                <span>{language === 'bn' ? '২. পালনীয় দিকনির্দেশনা (Advice):' : '2. PRACTICAL GUIDANCE & ADVICE:'}</span>
+                <span>{language === 'bn' ? '২. পালনীয় দিকনির্দেশনা:' : '2. PRACTICAL GUIDANCE:'}</span>
               </label>
               <textarea
                 rows={2}
@@ -1200,7 +1427,9 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
           {/* Score Badge */}
           <div className={`bg-gradient-to-r ${styles.bannerGradient} text-white rounded-lg px-2.5 py-1 shadow-sm flex flex-col items-center justify-center shrink-0 leading-tight`}>
             <span className="text-[8px] sm:text-[9px] uppercase font-extrabold tracking-wider text-white/90 leading-none">
-              {language === 'bn' ? 'সাপ্তাহিক' : 'Weekly'}
+              {columnCalculations.elapsedDaysCount < 7 
+                ? (language === 'bn' ? 'চলতি অগ্রগতি' : 'Progression')
+                : (language === 'bn' ? 'সাপ্তাহিক' : 'Weekly')}
             </span>
             <span className="text-xs sm:text-sm font-black leading-tight">
               {columnCalculations.overallPercentage}%
@@ -1213,7 +1442,8 @@ This is *${activeDevotee.name}.* Here is my weekly report for ${weekDates[0].dat
               {language === 'bn' ? (activeDevotee.nameBn || activeDevotee.name) : activeDevotee.name}
             </p>
             <p className={`text-[9px] sm:text-[10px] font-bold ${styles.primaryTextColor} truncate leading-tight`}>
-              {columnCalculations.totalScoredMarks}/{columnCalculations.maxWeeklyScoredMarks} {language === 'bn' ? 'নম্বর' : 'Marks'} • Scale {selectedScale}
+              {columnCalculations.totalScoredMarks}/{columnCalculations.maxScoredMarks} {language === 'bn' ? 'নম্বর' : 'Marks'}
+              {columnCalculations.elapsedDaysCount < 7 ? ` (${columnCalculations.elapsedDaysCount}/৭ দিন)` : ` • Scale ${selectedScale}`}
             </p>
           </div>
 

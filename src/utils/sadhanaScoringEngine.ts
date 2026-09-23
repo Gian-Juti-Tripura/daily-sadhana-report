@@ -1,7 +1,7 @@
 import { SADHANA_SCALES, SCORE_175_CONVERSION_TABLE, convertScoreTo175Pct } from '../data/sadhanaScalesData';
 export { SCORE_175_CONVERSION_TABLE, convertScoreTo175Pct };
 import type { DayCardEntry, DailySadhanaReport, MatrixDayEntry } from '../types/sadhana';
-import { DEFAULT_SAMPLE_MATRIX } from '../types/sadhana';
+import { EMPTY_DAY_ENTRY, DEFAULT_UNREPORTED_DAY_ENTRY } from '../types/sadhana';
 
 /**
  * Normalizes time string (e.g. "10.40 pm", "10:40 PM", "22:40") to "HH:MM" in 24h format.
@@ -299,18 +299,34 @@ export function syncDailyReportToWeeklyMatrix(
       try {
         matrix = JSON.parse(existingStr);
       } catch (e) {
-        matrix = { ...DEFAULT_SAMPLE_MATRIX };
+        matrix = {};
       }
-    } else {
-      matrix = { ...DEFAULT_SAMPLE_MATRIX };
     }
+
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const DAYS = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
+    DAYS.forEach((dk, index) => {
+      const dayDt = new Date(targetSat.getFullYear(), targetSat.getMonth(), targetSat.getDate() + index);
+      dayDt.setHours(0, 0, 0, 0);
+      const isFuture = dayDt.getTime() > todayMidnight.getTime();
+
+      if (isFuture) {
+        // Future days must strictly remain empty
+        matrix[dk] = { ...EMPTY_DAY_ENTRY };
+      } else if (!matrix[dk] || matrix[dk].toBed === undefined || matrix[dk].toBed === '') {
+        // Past or current day with no entry defaults to unreported baseline
+        matrix[dk] = { ...DEFAULT_UNREPORTED_DAY_ENTRY };
+      }
+    });
 
     const pad2 = (n: number) => {
       if (n <= 0) return '00';
       return n < 10 ? `0${n}` : `${n}`;
     };
 
-    const existingEntry = matrix[dayKey] || DEFAULT_SAMPLE_MATRIX[dayKey];
+    const existingEntry = matrix[dayKey] || DEFAULT_UNREPORTED_DAY_ENTRY;
 
     const newDayEntry: MatrixDayEntry = {
       toBed: pad2(scoreBreakdown.wentToBedMarks),
@@ -319,9 +335,9 @@ export function syncDailyReportToWeeklyMatrix(
       japa: pad2(scoreBreakdown.japaMarks),
       spBooks: pad2(scoreBreakdown.bookStudyMarks),
       hearing: pad2(scoreBreakdown.hearingMarks),
-      studyWork: report.academicStudyHours > 0 ? `${report.academicStudyHours} Hour` : (existingEntry?.studyWork || '2 Hour'),
+      studyWork: report.academicStudyHours > 0 ? `${report.academicStudyHours} Hour` : (existingEntry?.studyWork || '0 Hour'),
       cleaning: report.renderedSeva && report.renderedSeva !== 'Custom (অন্যান্য)' ? report.renderedSeva.slice(0, 25) : (existingEntry?.cleaning || 'Ashram Seva'),
-      followUp: existingEntry?.followUp || '10 Min.',
+      followUp: existingEntry?.followUp && existingEntry.followUp !== '-' ? existingEntry.followUp : '10 Min.',
       bbtBtg: existingEntry?.bbtBtg || '00',
       morningClass: pad2(scoreBreakdown.morningProgramMarks),
       sadhanaCard: '25', // Daily report submission marks punctuality

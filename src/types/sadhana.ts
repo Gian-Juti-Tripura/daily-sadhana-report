@@ -86,6 +86,40 @@ export interface MatrixDayEntry {
   bhajanGayatri: string;
 }
 
+export const EMPTY_DAY_ENTRY: MatrixDayEntry = {
+  toBed: '',
+  wakeUp: '',
+  dayRest: '',
+  japa: '',
+  spBooks: '',
+  hearing: '',
+  studyWork: '',
+  cleaning: '',
+  followUp: '',
+  bbtBtg: '',
+  morningClass: '',
+  sadhanaCard: '',
+  sloka: '',
+  bhajanGayatri: ''
+};
+
+export const DEFAULT_UNREPORTED_DAY_ENTRY: MatrixDayEntry = {
+  toBed: '00',
+  wakeUp: '00',
+  dayRest: '00',
+  japa: '00',
+  spBooks: '00',
+  hearing: '00',
+  studyWork: '0 Hour',
+  cleaning: '-',
+  followUp: '-',
+  bbtBtg: '00',
+  morningClass: '00',
+  sadhanaCard: '00',
+  sloka: '-',
+  bhajanGayatri: '00'
+};
+
 export const DEFAULT_SAMPLE_MATRIX: Record<string, MatrixDayEntry> = {
   sat: { toBed: '20', wakeUp: '25', dayRest: '25', japa: '25', spBooks: '25', hearing: '25', studyWork: '30 Min.', cleaning: '30 Min.', followUp: '2 Hour', bbtBtg: '2 BTG', morningClass: '25', sadhanaCard: '25', sloka: 'BG-7/9', bhajanGayatri: '25' },
   sun: { toBed: '25', wakeUp: '25', dayRest: '00', japa: '20', spBooks: '00', hearing: '00', studyWork: '2 Hour', cleaning: '10 Min.', followUp: '10 Min.', bbtBtg: '00 BTG', morningClass: '25', sadhanaCard: '25', sloka: '-', bhajanGayatri: '25' },

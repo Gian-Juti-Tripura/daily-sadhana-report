@@ -30,22 +30,30 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [counselees, setCounselees] = useState<CounseleeProfile[]>(getRegisteredCounselees());
 
-  // Form states
+  // Form states with auto-remembered credentials
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('voice_remembered_username') || activeDevotee.email || '');
+  const [password, setPassword] = useState(() => localStorage.getItem('voice_remembered_password') || '');
+  const [rememberCredentials, setRememberCredentials] = useState(true);
   const [counselor, setCounselor] = useState('Prabhupad');
   const [selectedDevoteeId, setSelectedDevoteeId] = useState(activeDevotee.id);
   const [showDevoteePicker, setShowDevoteePicker] = useState(false);
 
-  // Sync registered list when modal opens
+  // Sync registered list and load remembered credentials when modal opens
   useEffect(() => {
     if (isOpen) {
       const fresh = getRegisteredCounselees();
       setCounselees(fresh);
       setSelectedDevoteeId(activeDevotee.id);
-      if (activeDevotee.email) {
+      const rememberedUser = localStorage.getItem('voice_remembered_username');
+      const rememberedPass = localStorage.getItem('voice_remembered_password');
+      if (rememberedUser) {
+        setEmail(rememberedUser);
+      } else if (activeDevotee.email) {
         setEmail(activeDevotee.email);
+      }
+      if (rememberedPass) {
+        setPassword(rememberedPass);
       }
     }
   }, [isOpen, activeDevotee]);
@@ -61,6 +69,11 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
     'Custom (অন্যান্য)'
   ];
 
+  const handleModalClose = () => {
+    sessionStorage.setItem('voice_login_dismissed_session', 'true');
+    onClose();
+  };
+
   // Handle Logout
   const handleLogout = () => {
     localStorage.removeItem('voice_logged_in_user_id');
@@ -70,7 +83,7 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
       onSelectDevotee(fresh[0]);
     }
     toast.success(language === 'bn' ? 'সফলভাবে লগআউট হয়েছে' : 'Logged out successfully');
-    onClose();
+    handleModalClose();
   };
 
   // Handle Login
@@ -94,13 +107,19 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
     if (found) {
       localStorage.setItem('voice_logged_in_user_id', found.id);
       localStorage.setItem('voice_active_devotee_id', found.id);
+      if (rememberCredentials) {
+        localStorage.setItem('voice_remembered_username', email.trim() || found.email || found.name);
+        if (password) {
+          localStorage.setItem('voice_remembered_password', password);
+        }
+      }
       onSelectDevotee(found);
       toast.success(
         language === 'bn' 
           ? `স্বাগতম ${found.name}! সফলভাবে লগইন হয়েছে` 
           : `Welcome ${found.name}! Logged in successfully`
       );
-      onClose();
+      handleModalClose();
     } else {
       // Fallback: If devotee doesn't exist yet, create or log in
       if (!email.trim()) {
@@ -143,6 +162,12 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
 
     localStorage.setItem('voice_logged_in_user_id', newProfile.id);
     localStorage.setItem('voice_active_devotee_id', newProfile.id);
+    if (rememberCredentials) {
+      localStorage.setItem('voice_remembered_username', email.trim() || newProfile.email || '');
+      if (password) {
+        localStorage.setItem('voice_remembered_password', password);
+      }
+    }
     onSelectDevotee(newProfile);
 
     toast.success(
@@ -152,9 +177,7 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
     );
 
     setFullName('');
-    setEmail('');
-    setPassword('');
-    onClose();
+    handleModalClose();
   };
 
   return (
@@ -169,7 +192,7 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
           
           {/* Close Button */}
           <button
-            onClick={onClose}
+            onClick={handleModalClose}
             className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer z-10"
             aria-label="Close"
           >
@@ -361,8 +384,20 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
                   </button>
                 </div>
 
-                {/* Forgot Password Link */}
-                <div className="flex justify-end pt-0.5">
+                {/* Remember Me & Forgot Password Row */}
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 dark:text-slate-400">
+                    <input
+                      type="checkbox"
+                      checked={rememberCredentials}
+                      onChange={(e) => setRememberCredentials(e.target.checked)}
+                      className="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="font-medium">
+                      {language === 'bn' ? 'ইউজারনেম ও পাসওয়ার্ড মনে রাখুন' : 'Remember me'}
+                    </span>
+                  </label>
+
                   <button
                     type="button"
                     onClick={() => setAuthMode('FORGOT')}

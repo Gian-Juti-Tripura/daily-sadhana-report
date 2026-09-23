@@ -35,10 +35,14 @@ const AppContent: React.FC = () => {
     return initial;
   });
 
-  // Modal states
+  // Modal states: Login window appears first upon opening the app
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(() => {
+    const isLoggedIn = localStorage.getItem('voice_logged_in_user_id');
+    const dismissedThisSession = sessionStorage.getItem('voice_login_dismissed_session');
+    return !isLoggedIn || !dismissedThisSession;
+  });
 
   useEffect(() => {
     const handleOpenAuth = () => setIsAuthModalOpen(true);

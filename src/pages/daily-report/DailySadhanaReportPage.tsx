@@ -51,9 +51,9 @@ const formatChapterBn = (chStr: string): string => {
 };
 
 const STAYING_BN_MAP: Record<StayingLocation, string> = {
-  VOICE: 'ভয়েস (VOICE)',
-  Home: 'বাড়ি (Home)',
-  Temple: 'মন্দির (Temple)',
+  VOICE: 'ভয়েস',
+  Home: 'বাড়ি',
+  Temple: 'মন্দির',
   Outside: 'বাইরে / ভ্রমণ'
 };
 
@@ -520,17 +520,17 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
           <div>
             <label className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 block mb-1 flex items-center gap-1.5 truncate">
               <ShieldCheck className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${styles.primaryTextColor} shrink-0`} />
-              <span className="truncate">{language === 'bn' ? 'বর্তমান অবস্থান (Staying at)' : 'Staying At'}</span>
+              <span className="truncate">{language === 'bn' ? 'অবস্থান' : 'Location'}</span>
             </label>
             <select
               value={stayingAt}
               onChange={(e) => setStayingAt(e.target.value as StayingLocation)}
               className={`w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:${styles.activeRing} transition-all cursor-pointer`}
             >
-              <option value="VOICE">{language === 'bn' ? 'VOICE (ভয়েস)' : 'VOICE'}</option>
-              <option value="Home">{language === 'bn' ? 'Home (বাড়ি)' : 'Home'}</option>
-              <option value="Temple">{language === 'bn' ? 'Temple (মন্দির)' : 'Temple'}</option>
-              <option value="Outside">{language === 'bn' ? 'Outside (বাইরে / ভ্রমণ)' : 'Outside'}</option>
+              <option value="VOICE">{language === 'bn' ? 'ভয়েস' : 'VOICE'}</option>
+              <option value="Home">{language === 'bn' ? 'বাড়ি' : 'Home'}</option>
+              <option value="Temple">{language === 'bn' ? 'মন্দির' : 'Temple'}</option>
+              <option value="Outside">{language === 'bn' ? 'বাইরে / ভ্রমণ' : 'Outside'}</option>
             </select>
           </div>
 
@@ -542,13 +542,13 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="flex items-center space-x-2">
               <Moon className={`w-5 h-5 ${styles.primaryTextColor}`} />
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100">
-                {language === 'bn' ? '১. দেহ সম্পর্কিত নিয়মাবলী (Body Regulation)' : '1. Body Regulation'}
+                {language === 'bn' ? '১. দেহ' : '1. Body'}
               </h3>
             </div>
-            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${styles.badgeClass}`}>
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
               {language === 'bn'
-                ? `মোট: ${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ (${toBnNum(scoreBreakdown.bodyAvgPct)}%)`
-                : `Total: ${scoreBreakdown.bodyTotal}/75 (${scoreBreakdown.bodyAvgPct}%)`}
+                ? `${toBnNum(scoreBreakdown.bodyTotal)}/৭৫ • ${toBnNum(scoreBreakdown.bodyAvgPct)}%`
+                : `${scoreBreakdown.bodyTotal}/75 • ${scoreBreakdown.bodyAvgPct}%`}
             </span>
           </div>
 
@@ -559,10 +559,10 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                    (1) {language === 'bn' ? 'শয়ন সময় (Went to bed)' : 'Went to bed'}
+                    (১) {language === 'bn' ? 'শয়ন সময়' : 'Bedtime'}
                   </label>
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                    +{scoreBreakdown.wentToBedMarks} pts
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                    +{scoreBreakdown.wentToBedMarks}
                   </span>
                 </div>
                 <input
@@ -596,10 +596,10 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                    (2) {language === 'bn' ? 'শয্যা ত্যাগ (Got up)' : 'Got up'}
+                    (২) {language === 'bn' ? 'শয্যা ত্যাগ' : 'Wake-up'}
                   </label>
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                    +{scoreBreakdown.wakeUpMarks} pts
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                    +{scoreBreakdown.wakeUpMarks}
                   </span>
                 </div>
                 <input
@@ -633,10 +633,10 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                    (3) {language === 'bn' ? 'দিবানিন্দ্রা (Day rest)' : 'Day rest (minutes)'}
+                    (৩) {language === 'bn' ? 'দিবানিদ্রা' : 'Day Rest'}
                   </label>
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                    +{scoreBreakdown.daySleepMarks} pts
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                    +{scoreBreakdown.daySleepMarks}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -678,13 +678,13 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="flex items-center space-x-2">
               <Sun className={`w-5 h-5 ${styles.primaryTextColor}`} />
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100">
-                {language === 'bn' ? '২. পারমার্থিক অনুশীলন (Soul Culture)' : '2. Soul Culture'}
+                {language === 'bn' ? '২. আত্মা' : '2. Soul'}
               </h3>
             </div>
-            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${styles.badgeClass}`}>
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
               {language === 'bn'
-                ? `মোট: ${toBnNum(scoreBreakdown.soulTotal)}/৭৫ (${toBnNum(scoreBreakdown.soulAvgPct)}%)`
-                : `Total: ${scoreBreakdown.soulTotal}/75 (${scoreBreakdown.soulAvgPct}%)`}
+                ? `${toBnNum(scoreBreakdown.soulTotal)}/৭৫ • ${toBnNum(scoreBreakdown.soulAvgPct)}%`
+                : `${scoreBreakdown.soulTotal}/75 • ${scoreBreakdown.soulAvgPct}%`}
             </span>
           </div>
 
@@ -694,7 +694,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
-                  (1) {language === 'bn' ? 'হরেকৃষ্ণ মহামন্ত্র জপ (Japa rounds)' : 'Japa (rounds)'}
+                  (১) {language === 'bn' ? 'হরেকৃষ্ণ মহামন্ত্র জপ' : 'Hare Krishna Japa'}
                 </label>
                 <div className="flex items-center space-x-3">
                   <input
@@ -713,7 +713,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
               <div>
                 <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
-                  {language === 'bn' ? 'জপ সমাপ্তির সময় (Japa completion time)' : 'Japa completion time'}
+                  {language === 'bn' ? 'জপ সমাপ্তি' : 'Completion Time'}
                 </label>
                 <div className="flex items-center space-x-2">
                   <input
@@ -723,8 +723,8 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                     placeholder="7.30 am"
                     className="flex-1 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-bold text-slate-900 dark:text-slate-100"
                   />
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                    +{scoreBreakdown.japaMarks} pts
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                    +{scoreBreakdown.japaMarks}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 pt-1.5">
@@ -752,11 +752,11 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 <div className="flex items-center space-x-2">
                   <BookOpen className={`w-4 h-4 ${styles.primaryTextColor}`} />
                   <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                    (2) {language === 'bn' ? 'শাস্ত্রীয় গ্রন্থ অধ্যয়ন (শ্রীল প্রভুপাদের ৮-সেমিস্টার পাঠ্যক্রম)' : 'Scripture Study (Srila Prabhupada 8-Semester Curriculum)'}
+                    (২) {language === 'bn' ? 'শাস্ত্রীয় অধ্যয়ন' : 'Scripture Study'}
                   </span>
                 </div>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                  +{scoreBreakdown.bookStudyMarks} pts
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                  +{scoreBreakdown.bookStudyMarks}
                 </span>
               </div>
 
@@ -765,7 +765,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 {/* Study Minutes */}
                 <div>
                   <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
-                    {language === 'bn' ? 'অধ্যয়ন সময় (মিনিট)' : 'Study Time (minutes)'}
+                    {language === 'bn' ? 'অধ্যয়ন সময়' : 'Study Time'}
                   </label>
                   <div className="flex items-center space-x-2">
                     <input
@@ -782,7 +782,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 {/* Book Curriculum Dropdown (Categorized by 8 Semesters) */}
                 <div className="sm:col-span-2">
                   <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
-                    {language === 'bn' ? 'অধ্যয়নকৃত গ্রন্থ নির্বাচন (প্রভুপাদের ৮-সেমিস্টার পাঠ্যসূচি)' : 'Select Book (Srila Prabhupada 8-Semester Curriculum)'}
+                    {language === 'bn' ? 'গ্রন্থ নির্বাচন' : 'Select Book'}
                   </label>
                   <select
                     value={scriptureBook}
@@ -801,7 +801,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                         ))}
                       </optgroup>
                     ))}
-                    <option value="custom">{language === 'bn' ? 'অন্যান্য গ্রন্থ (Custom)' : 'Custom Book'}</option>
+                    <option value="custom">{language === 'bn' ? 'অন্যান্য গ্রন্থ' : 'Custom Book'}</option>
                   </select>
                 </div>
 
@@ -827,7 +827,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                 <div>
                   <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
-                    {language === 'bn' ? 'অধ্যায় বা পৃষ্ঠা বিবরণ' : 'Chapter / Page Range'}
+                    {language === 'bn' ? 'অধ্যায় বা পৃষ্ঠা' : 'Chapter / Page'}
                   </label>
                   <input
                     type="text"
@@ -841,12 +841,12 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 <div className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 shadow-xs flex items-center justify-between gap-3">
                   <div>
                     <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 block">
-                      {language === 'bn' ? 'নোট লিখেছেন কি না?' : 'Notes Taken?'}
+                      {language === 'bn' ? 'নোট গ্রহণ' : 'Notes Taken'}
                     </span>
                     <span className="text-[11px] text-slate-500">
                       {scriptureNotes 
-                        ? (language === 'bn' ? 'নোট সংরক্ষণ করা হয়েছে' : 'Realization notes recorded')
-                        : (language === 'bn' ? 'নোট সংরক্ষণ করা হয়নি' : 'No notes recorded')}
+                        ? (language === 'bn' ? 'সংরক্ষিত' : 'Recorded')
+                        : (language === 'bn' ? 'সংরক্ষিত নয়' : 'Not recorded')}
                     </span>
                   </div>
                   <YesNoToggle value={scriptureNotes} onChange={setScriptureNotes} />
@@ -858,17 +858,17 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
                 <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                  (3) {language === 'bn' ? 'প্রবচন শ্রবণ (Lecture hearing)' : 'Lecture hearing'} ({totalHearingMinutes} min total)
+                  (৩) {language === 'bn' ? 'প্রবচন শ্রবণ' : 'Lecture Hearing'} ({totalHearingMinutes} min)
                 </span>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
-                  +{scoreBreakdown.hearingMarks} pts
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                  +{scoreBreakdown.hearingMarks}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
                   <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
-                    Srila Prabhupada (শ্রীল প্রভুপাদ)
+                    {language === 'bn' ? 'শ্রীল প্রভুপাদ' : 'Srila Prabhupada'}
                   </label>
                   <div className="flex items-center space-x-1.5">
                     <input
@@ -884,7 +884,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
                 <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
                   <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
-                    Gurumaharaj (গুরুমহারাজ)
+                    {language === 'bn' ? 'গুরুমহারাজ' : 'Guru Maharaj'}
                   </label>
                   <div className="flex items-center space-x-1.5">
                     <input
@@ -900,7 +900,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
                 <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
                   <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
-                    Others (অন্যান্য সিনিয়র ভক্ত)
+                    {language === 'bn' ? 'অন্যান্য' : 'Others'}
                   </label>
                   <div className="flex items-center space-x-1.5">
                     <input
@@ -925,11 +925,11 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="flex items-center space-x-2">
               <HeartHandshake className={`w-5 h-5 ${styles.primaryTextColor}`} />
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100">
-                {language === 'bn' ? '৩. সেবা ও একাডেমিক / ক্যারিয়ার পড়াশোনা (Seva & Academic / Career study)' : '3. Seva & Academic / Career Study'}
+                {language === 'bn' ? '৩. সেবা ও পড়াশোনা' : '3. Seva & Study'}
               </h3>
             </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-              {language === 'bn' ? 'সময় ও ফলাফলভিত্তিক সেবা (১৭৫ নীতি)' : 'Duration & Outcome (175 Matrix)'}
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+              {language === 'bn' ? '১৭৫ নীতি' : '175 Matrix'}
             </span>
           </div>
 
@@ -939,7 +939,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between h-full min-h-[175px] space-y-2">
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  (1) {language === 'bn' ? 'সম্পাদিত সেবা (Rendered Seva)' : 'Rendered Seva (dropdown / text)'}
+                  (১) {language === 'bn' ? 'সম্পাদিত সেবা' : 'Rendered Seva'}
                 </label>
                 <select
                   value={selectedSeva}
@@ -993,12 +993,12 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    (2) {language === 'bn' ? 'একাডেমিক / ক্যারিয়ার (চাকরির) পড়াশোনা (Academic / Career study)' : 'Academic / Career study (hours)'}
+                    (২) {language === 'bn' ? 'একাডেমিক পড়াশোনা' : 'Academic Study'}
                   </label>
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${styles.badgeClass}`}>
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
                     {academicStudyHours > 0
-                      ? (language === 'bn' ? `${toBnNum(academicStudyHours)} ঘণ্টা সম্পন্ন` : `${academicStudyHours}h logged`)
-                      : (language === 'bn' ? 'সময় লিখুন' : 'Record hours')}
+                      ? (language === 'bn' ? `${toBnNum(academicStudyHours)} ঘণ্টা` : `${academicStudyHours}h`)
+                      : (language === 'bn' ? '০ ঘণ্টা' : '0h')}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1041,11 +1041,11 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
             <div className="flex items-center space-x-2">
               <Clock className={`w-5 h-5 ${styles.primaryTextColor}`} />
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100">
-                {language === 'bn' ? '৪. প্রাতঃকালীন কার্যক্রমে উপস্থিতি (Morning program attended)' : '4. Morning Program Attended'}
+                {language === 'bn' ? '৪. প্রাতঃকালীন অনুষ্ঠান' : '4. Morning Program'}
               </h3>
             </div>
-            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${styles.badgeClass}`}>
-              +{scoreBreakdown.morningProgramMarks}/25 pts
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+              +{scoreBreakdown.morningProgramMarks}/25
             </span>
           </div>
 
@@ -1060,7 +1060,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div className="flex items-center gap-2">
                 <span className="text-base select-none">🌅</span>
                 <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  {language === 'bn' ? '১. মঙ্গল আরতি (Mangalarati)' : '1. Mangalarati'}
+                  (১) {language === 'bn' ? 'মঙ্গল আরতি' : 'Mangalarati'}
                 </span>
               </div>
               <YesNoToggle value={mangalarati} onChange={setMangalarati} />
@@ -1075,7 +1075,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div className="flex items-center gap-2">
                 <span className="text-base select-none">🦁</span>
                 <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  {language === 'bn' ? '২. নৃসিংহ আরতি (Nrsimharati)' : '2. Nrsimharati'}
+                  (২) {language === 'bn' ? 'নৃসিংহ আরতি' : 'Nrsimharati'}
                 </span>
               </div>
               <YesNoToggle value={nrsimharati} onChange={setNrsimharati} />
@@ -1090,7 +1090,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div className="flex items-center gap-2">
                 <span className="text-base select-none">🌿</span>
                 <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  {language === 'bn' ? '৩. তুলসী আরতি ও পরিক্রমা (Tulasi arati & parikrama)' : '3. Tulasi arati & parikrama'}
+                  (৩) {language === 'bn' ? 'তুলসী আরতি ও পরিক্রমা' : 'Tulasi Arati'}
                 </span>
               </div>
               <YesNoToggle value={tulasiArati} onChange={setTulasiArati} />
@@ -1105,7 +1105,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div className="flex items-center gap-2">
                 <span className="text-base select-none">💧</span>
                 <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  {language === 'bn' ? '৪. বৃন্দাদেবীকে জলদান (Watering Vrinda devi)' : '4. Watering Vrinda devi'}
+                  (৪) {language === 'bn' ? 'বৃন্দাদেবীকে জলদান' : 'Watering Tulasi'}
                 </span>
               </div>
               <YesNoToggle value={wateringVrinda} onChange={setWateringVrinda} />
@@ -1120,7 +1120,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <div className="flex items-center gap-2">
                 <span className="text-base select-none">📜</span>
                 <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  {language === 'bn' ? '৫. শিক্ষাষ্টক ও দশবিধ নামাপরাধ পাঠ (Siksastakam & 10 offenses)' : '5. Siksastakam & 10 offenses recitation'}
+                  (৫) {language === 'bn' ? 'শিক্ষাষ্টক ও দশবিধ নামাপরাধ' : 'Siksastakam & Offenses'}
                 </span>
               </div>
               <YesNoToggle value={siksastakamAndOffenses} onChange={setSiksastakamAndOffenses} />
@@ -1134,7 +1134,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
           <div className={`flex items-center space-x-2 border-b ${styles.accentBorderColor} pb-2`}>
             <Sparkles className={`w-5 h-5 ${styles.primaryTextColor}`} />
             <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
-              {language === 'bn' ? '৫. অন্যান্য (Additional)' : '5. Additional'}
+              {language === 'bn' ? '৫. অন্যান্য' : '5. Additional'}
             </h3>
           </div>
 
@@ -1150,10 +1150,10 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 <span className="text-base select-none mt-0.5">📖</span>
                 <div>
                   <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block">
-                    (1) {language === 'bn' ? 'শ্লোক মুখস্থকরণ' : 'Sloka memorizing'}
+                    (১) {language === 'bn' ? 'শ্লোক মুখস্থ' : 'Sloka Memorizing'}
                   </span>
                   <span className="text-[11px] text-slate-500">
-                    {slokaMemorized ? (language === 'bn' ? 'মুখস্থ সম্পন্ন' : 'Memorized') : (language === 'bn' ? 'চলমান' : 'In progress')}
+                    {slokaMemorized ? (language === 'bn' ? 'সম্পন্ন' : 'Memorized') : (language === 'bn' ? 'চলমান' : 'In progress')}
                   </span>
                 </div>
               </div>
@@ -1170,7 +1170,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 <span className="text-base select-none mt-0.5">📿</span>
                 <div>
                   <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 block">
-                    (2) {language === 'bn' ? 'ভজন ও গায়ত্রী সম্পন্ন' : 'Bhajan / Gayatri'}
+                    (২) {language === 'bn' ? 'ভজন ও গায়ত্রী' : 'Bhajan & Gayatri'}
                   </span>
                   <span className="text-[11px] text-slate-500">
                     {bhajanGayatriCompleted ? (language === 'bn' ? 'সম্পন্ন' : 'Completed') : (language === 'bn' ? 'অসম্পূর্ণ' : 'Pending')}
@@ -1186,11 +1186,11 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                 <div className="flex items-center gap-1.5">
                   <span className="text-base select-none">📱</span>
                   <label className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-                    (3) {language === 'bn' ? 'সোশ্যাল মিডিয়া সময়' : 'Screen time'}
+                    (৩) {language === 'bn' ? 'স্ক্রিন টাইম' : 'Screen Time'}
                   </label>
                 </div>
-                <span className="text-[11px] text-slate-500">
-                  {socialMediaMinutes <= 30 ? '✅ Controlled' : '⚠️ Keep ≤30m'}
+                <span className="text-[10px] font-mono text-slate-500">
+                  {socialMediaMinutes <= 30 ? '≤30m' : '>30m'}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -1247,7 +1247,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
                   <span className={`text-2xl font-black ${styles.primaryTextColor}`}>
                     {scoreBreakdown.percentage}%
                   </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${styles.badgeClass}`}>
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
                     {scoreBreakdown.percentage >= 80 ? (language === 'bn' ? 'উত্তম' : 'Excellent') : (language === 'bn' ? 'চলমান' : 'Progressing')}
                   </span>
                 </div>
@@ -1255,18 +1255,18 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
               {/* Score bars */}
               {[
-                { label: language === 'bn' ? 'দেহ (Body)' : 'Body', value: scoreBreakdown.bodyTotal, max: 75, pct: scoreBreakdown.bodyAvgPct },
-                { label: language === 'bn' ? 'আত্মা (Soul)' : 'Soul', value: scoreBreakdown.soulTotal, max: 75, pct: scoreBreakdown.soulAvgPct },
-                { label: language === 'bn' ? 'মর্নিং প্রোগ্রাম (Morning)' : 'Morning Program', value: scoreBreakdown.morningProgramMarks, max: 25, pct: Math.round(scoreBreakdown.morningProgramMarks / 25 * 100) },
+                { label: language === 'bn' ? 'দেহ' : 'Body', value: scoreBreakdown.bodyTotal, max: 75, pct: scoreBreakdown.bodyAvgPct },
+                { label: language === 'bn' ? 'আত্মা' : 'Soul', value: scoreBreakdown.soulTotal, max: 75, pct: scoreBreakdown.soulAvgPct },
+                { label: language === 'bn' ? 'প্রাতঃকালীন অনুষ্ঠান' : 'Morning Program', value: scoreBreakdown.morningProgramMarks, max: 25, pct: Math.round(scoreBreakdown.morningProgramMarks / 25 * 100) },
               ].map(({ label, value, max, pct }) => (
                 <div key={label} className="mb-3">
                   <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     <span>{label}</span>
                     <span>{toBnNum(value)}/{toBnNum(max)} ({toBnNum(pct)}%)</span>
                   </div>
-                  <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden p-0.5">
+                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-md overflow-hidden p-0.5">
                     <div
-                      className={`h-full rounded-full bg-gradient-to-r ${styles.bannerGradient} transition-all duration-500`}
+                      className={`h-full rounded bg-gradient-to-r ${styles.bannerGradient} transition-all duration-500`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -1275,9 +1275,9 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
               <div className={`mt-3 pt-3 border-t ${styles.accentBorderColor} flex justify-between items-center`}>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  {language === 'bn' ? 'মোট নম্বর (১৭৫ ম্যাট্রিক্স)' : 'Total Marks (175 Matrix)'}
+                  {language === 'bn' ? 'মোট নম্বর' : 'Total Marks'}
                 </span>
-                <span className={`text-sm font-black ${styles.primaryTextColor}`}>
+                <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
                   {toBnNum(scoreBreakdown.totalMarks)}/১৭৫
                 </span>
               </div>
