@@ -39,14 +39,21 @@ export const WeeklyReportModal: React.FC<WeeklyReportModalProps> = ({
   if (!isOpen) return null;
 
   const generateReportMessage = () => {
-    return `🌿 Hare Krishna. 🙏
+    const devoteeCleanName = (devoteeName || 'Gian Juti Tripura').trim().replace(/\.+$/, '');
+    const bodyFormatted = typeof formData.bodyPct === 'string' && formData.bodyPct.includes('.')
+      ? formData.bodyPct
+      : `${parseFloat(formData.bodyPct || '0').toFixed(2)}`;
+    const soulFormatted = typeof formData.soulPct === 'string' && formData.soulPct.includes('.')
+      ? formData.soulPct
+      : `${parseFloat(formData.soulPct || '0').toFixed(2)}`;
 
-This is *${devoteeName}.* Here is my weekly report for ${weekDateStr}:
+    return `🌿 Hare Krishna. Dandabat Pranam🙏
+*${devoteeCleanName}.*
 
 📚 *Material Study:* ${formData.matHours} hours
-💪 *Body:* ${formData.bodyPct}%
-🕉️ *Soul:* ${formData.soulPct}%
-📖 *Śrīla Prabhupāda Study:* ${formData.spHours} hours (${formData.spBookRef})
+💪 *Body:* ${bodyFormatted}%
+🕉️ *Soul:* ${soulFormatted}%
+📖 *Śrīla Prabhupāda Book Study:* ${formData.spHours} hours
 🎧 *Lecture Hearing:* ${formData.lectHours} hours
 🪷 *Śloka Memorization:* ${formData.slokaText}
 

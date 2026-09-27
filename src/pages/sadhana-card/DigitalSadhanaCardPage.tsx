@@ -443,21 +443,27 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
       spBookRef: spBookRefFound || '—',
       lectHours: lectHoursTotal > 0 ? (lectHoursTotal % 1 === 0 ? lectHoursTotal.toString() : lectHoursTotal.toFixed(1)) : '0',
       slokaText: slokasFound.length > 0
-        ? `Yes — “${slokasFound[0]}”`
-        : '—'
+        ? (slokasFound[0].startsWith('Yes') ? slokasFound[0] : `Yes — “${slokasFound[0]}”`)
+        : 'Yes — “BG-5.6/SB-1.2.3: ....(the verse)- the firs stanja"'
     };
   }, [matrixEntries, columnCalculations]);
 
   const generateWeeklyReportText = () => {
-    return `🌿 Hare Krishna. 🙏
+    const devoteeCleanName = (activeDevotee.name || 'Gian Juti Tripura').trim().replace(/\.+$/, '');
+    const bodyFormatted = typeof weeklyStats.bodyPct === 'string' && weeklyStats.bodyPct.includes('.')
+      ? weeklyStats.bodyPct
+      : `${parseFloat(weeklyStats.bodyPct || '0').toFixed(2)}`;
+    const soulFormatted = typeof weeklyStats.soulPct === 'string' && weeklyStats.soulPct.includes('.')
+      ? weeklyStats.soulPct
+      : `${parseFloat(weeklyStats.soulPct || '0').toFixed(2)}`;
 
-This is *${activeDevotee.name}.* Here is my weekly progression report for ${weekDates[0].date}:
+    return `🌿 Hare Krishna. Dandabat Pranam🙏
+*${devoteeCleanName}.*
 
-📊 *Progression:* ${columnCalculations.elapsedDaysCount}/7 days elapsed (${columnCalculations.overallProgressionPct}%)
 📚 *Material Study:* ${weeklyStats.matHours} hours
-💪 *Body:* ${weeklyStats.bodyPct}%
-🕉️ *Soul:* ${weeklyStats.soulPct}%
-📖 *Śrīla Prabhupāda Study:* ${weeklyStats.spHours} hours (${weeklyStats.spBookRef})
+💪 *Body:* ${bodyFormatted}%
+🕉️ *Soul:* ${soulFormatted}%
+📖 *Śrīla Prabhupāda Book Study:* ${weeklyStats.spHours} hours
 🎧 *Lecture Hearing:* ${weeklyStats.lectHours} hours
 🪷 *Śloka Memorization:* ${weeklyStats.slokaText}
 
