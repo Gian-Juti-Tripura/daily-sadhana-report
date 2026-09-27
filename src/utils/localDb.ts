@@ -89,10 +89,6 @@ export const localDb = {
       try {
         supabase.from('services').delete().eq('id', '0').then(() => {});
         supabase.from('members').delete().like('id', 'dev_%').neq('id', 'dev_caretaker').then(() => {});
-        supabase.from('members').delete().ilike('full_name', '%Akash Paul%').then(() => {});
-        supabase.from('members').delete().ilike('full_name', '%Utpol Das Khocon%').then(() => {});
-        supabase.from('members').delete().ilike('full_name', '%Gianjyoti Tripura%').then(() => {});
-        supabase.from('members').delete().ilike('full_name', '%Dipendranath Roy%').then(() => {});
         supabase.from('members').update({ role: 'ADMIN', cycle_order: -1 }).eq('id', 'dev_caretaker').then(() => {});
       } catch {
         // non-blocking

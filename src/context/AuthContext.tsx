@@ -75,7 +75,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (normalizedEmail && (
         normalizedEmail === 'gianjuti.csecu@gmail.com' ||
         normalizedEmail === 'gianjyoti.cse.cu@gmail.com' ||
-        normalizedEmail === 'rasvihari.voice@gmail.com'
+        normalizedEmail === 'rasvihari.voice@gmail.com' ||
+        normalizedEmail === 'dipendranathroy2003@gmail.com' ||
+        normalizedEmail === 'dipendranath.roy@gmail.com'
       )) {
         setRole('ADMIN');
         localStorage.setItem('voice_auth_role', 'ADMIN');
