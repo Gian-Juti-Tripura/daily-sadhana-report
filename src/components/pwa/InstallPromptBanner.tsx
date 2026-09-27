@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Download, X, Sparkles, Share2, PlusSquare, CheckCircle2, 
   ChevronLeft, Laptop, Smartphone, Check, ArrowDownToLine, 
-  Info, AlertCircle 
+  Info, Copy 
 } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../../context/LanguageContext';
@@ -18,12 +18,15 @@ export const InstallPromptBanner: React.FC = () => {
   const [isInstalled, setIsInstalled] = useState(false);
   const [installStatusMsg, setInstallStatusMsg] = useState<string | null>(null);
 
-  // Platform detection
+  // Platform & Browser detection
   const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   const isIos = typeof navigator !== 'undefined' && (
     /iPad|iPhone|iPod/.test(navigator.userAgent) || 
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   );
+  const isFirefox = typeof navigator !== 'undefined' && /Firefox/i.test(navigator.userAgent);
+  const isDesktop = !isAndroid && !isIos;
+  const isLinux = typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent) && !isAndroid;
 
   useEffect(() => {
     // 0. Do not show inside native Android / iOS Capacitor apps
@@ -124,8 +127,8 @@ export const InstallPromptBanner: React.FC = () => {
         } else {
           setInstallStatusMsg(
             language === 'bn' 
-              ? 'ইনস্টল বাতিল করা হয়েছে। আপনি চাইলে নিচের নির্দেশিকা দেখে ব্রাউজার মেনু থেকে ইনস্টল করতে পারেন।' 
-              : 'Installation was cancelled. You can still install via the browser menu below.'
+              ? 'ইনস্টল বাতিল করা হয়েছে।' 
+              : 'Installation was cancelled.'
           );
         }
       } catch (err) {
@@ -135,7 +138,6 @@ export const InstallPromptBanner: React.FC = () => {
       setDeferredPrompt(null);
       (window as any).deferredInstallPrompt = null;
     } else {
-      // Browser didn't expose native 1-click prompt (e.g. Safari, Firefox, or localhost without prompt)
       setShowInstructions(true);
     }
   };
@@ -145,6 +147,15 @@ export const InstallPromptBanner: React.FC = () => {
     setShowInstructions(false);
     setInstallStatusMsg(null);
     sessionStorage.setItem('sadhana_pwa_dismissed_session', 'true');
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success(
+      language === 'bn' 
+        ? 'লিংক কপি হয়েছে! Chrome বা Brave-এ পেস্ট করে খুলুন।' 
+        : 'Link copied! Open in Google Chrome or Brave.'
+    );
   };
 
   if (isNative || !showModal || isStandalone) return null;
@@ -176,8 +187,8 @@ export const InstallPromptBanner: React.FC = () => {
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {language === 'bn' 
-                ? 'অ্যাপটি এখন আপনার হোমস্ক্রিন বা অ্যাপ তালিকায় যুক্ত হয়েছে।' 
-                : 'The app is now added to your home screen / app launcher.'}
+                ? 'অ্যাপটি এখন আপনার অ্যাপ মেনু ও ডকে যুক্ত হয়েছে।' 
+                : 'The app is now available in your system app launcher.'}
             </p>
             <button
               onClick={handleDismiss}
@@ -186,8 +197,72 @@ export const InstallPromptBanner: React.FC = () => {
               {language === 'bn' ? 'সম্পন্ন' : 'Done'}
             </button>
           </div>
+        ) : isFirefox && isDesktop ? (
+          /* Specialized Clear View for Firefox Desktop (Linux/Windows/macOS) */
+          <div className="space-y-3 text-left">
+            {/* Header with Firefox Icon indication */}
+            <div className="flex items-center gap-2 pt-1">
+              <div className="p-2 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 shrink-0">
+                <Laptop size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight">
+                  {language === 'bn' ? 'ডেস্কটপ ফায়ারফক্স (Firefox)' : 'Firefox Desktop PWA'}
+                </h3>
+                <p className="text-[11px] font-semibold text-orange-600 dark:text-orange-400">
+                  {language === 'bn' ? 'মজিলা ডেস্কটপ PWA সমর্থন করে না' : 'Firefox does not support desktop PWAs'}
+                </p>
+              </div>
+            </div>
+
+            {/* Clear Explanation */}
+            <div className="p-3 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-xs text-orange-950 dark:text-orange-200 space-y-1.5">
+              <p className="leading-relaxed">
+                {language === 'bn' 
+                  ? 'Mozilla Firefox তাদের ডেস্কটপ ব্রাউজার থেকে PWA ইনস্টল ফিচারটি বন্ধ করে রেখেছে। তাই ফায়ারফক্সের অ্যাড্রেস বারে কোনো ইনস্টল আইকন প্রদর্শিত হয় না।'
+                  : 'Mozilla intentionally removed desktop PWA installation from Firefox. There is no install icon or button in Firefox address bar.'}
+              </p>
+            </div>
+
+            {/* Actionable Solution for Fedora / Linux */}
+            <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-950 dark:text-emerald-200 space-y-2">
+              <p className="font-extrabold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                <Sparkles size={14} />
+                <span>
+                  {isLinux 
+                    ? (language === 'bn' ? 'Fedora Linux-এ ১-ক্লিকে ইনস্টল করতে:' : 'To install 1-click on Fedora Linux:') 
+                    : (language === 'bn' ? 'কম্পিউটারে ১-ক্লিকে ইনস্টল করতে:' : 'To install 1-click on Desktop:')}
+                </span>
+              </p>
+              <p className="leading-relaxed text-[11px]">
+                {language === 'bn'
+                  ? 'আপনার কম্পিউটারে থাকা Google Chrome বা Brave ব্রাউজারে লিংকটি খুলুন। সেখানে সরাসরি ১-ট্যাপে আপনার অপারেটিং সিস্টেমের মূল অ্যাপ্লিকেশনে ইনস্টল হয়ে যাবে।'
+                  : 'Open this link in Google Chrome or Brave on your computer. You will get an instant 1-click desktop installation!'}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-1 space-y-2">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+              >
+                <Copy size={15} />
+                <span>{language === 'bn' ? 'লিংক কপি করুন (Chrome বা Brave-এ খুলুন)' : 'Copy Link (Open in Chrome / Brave)'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="w-full py-1.5 text-center text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
+              >
+                {language === 'bn' ? 'ফায়ারফক্সেই চালিয়ে যান (ওয়েব মোড)' : 'Continue in Firefox (Web mode)'}
+              </button>
+            </div>
+          </div>
         ) : !showInstructions ? (
-          /* Normal View */
+          /* Normal View for Chrome, Brave, Edge & Mobile */
           <>
             {/* Icon & Golden Aura */}
             <div className="mx-auto relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-amber-500 p-[2px] shadow-lg shadow-emerald-500/20 flex items-center justify-center overflow-hidden ring-2 sm:ring-4 ring-emerald-500/20">
@@ -212,8 +287,8 @@ export const InstallPromptBanner: React.FC = () => {
               
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed px-1">
                 {language === 'bn'
-                  ? 'আপনার মোবাইল বা কম্পিউটারে ১-ট্যাপে ইনস্টল করে দ্রুত ও নিরাপদে অফলাইনেও সাধনা রিপোর্ট পরিচালনা করুন।'
-                  : 'Install on your phone or desktop for instant, 1-tap offline access to your daily sadhana records.'}
+                  ? 'আপনার ডিভাইসে সরাসরি ইনস্টল করে দ্রুত ও নিরাপদে অফলাইনেও সাধনা রিপোর্ট পরিচালনা করুন।'
+                  : 'Install on your device for instant, 1-tap offline access to your daily sadhana records.'}
               </p>
             </div>
 
@@ -227,7 +302,7 @@ export const InstallPromptBanner: React.FC = () => {
 
             {/* Main Action Buttons */}
             <div className="pt-2 space-y-2.5">
-              {/* Option A: Browser Native 1-Click PWA Install (if browser supports it) */}
+              {/* Option A: Browser Native 1-Click PWA Install */}
               {(deferredPrompt || (window as any).deferredInstallPrompt) ? (
                 <button
                   type="button"
@@ -237,8 +312,16 @@ export const InstallPromptBanner: React.FC = () => {
                   <Download size={18} className="animate-bounce" />
                   <span>{language === 'bn' ? '১-ক্লিকে অ্যাপ ইনস্টল করুন' : '1-Click Install App Now'}</span>
                 </button>
+              ) : isDesktop ? (
+                <button
+                  type="button"
+                  onClick={() => setShowInstructions(true)}
+                  className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm shadow-lg shadow-amber-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Laptop size={17} />
+                  <span>{language === 'bn' ? 'ডেস্কটপে ইনস্টল করার নিয়ম দেখুন' : 'How to Install on Desktop'}</span>
+                </button>
               ) : (
-                /* If 1-click prompt is not supported by browser, show clear options */
                 <button
                   type="button"
                   onClick={() => setShowInstructions(true)}
@@ -249,18 +332,20 @@ export const InstallPromptBanner: React.FC = () => {
                 </button>
               )}
 
-              {/* Option B: Direct Android APK Download Button (For Android & General Mobile Users) */}
-              <a
-                href="/Sadhana_app.apk"
-                download="Sadhana_app.apk"
-                onClick={() => {
-                  toast.success(language === 'bn' ? 'অ্যান্ড্রয়েড এপিকে ডাউনলোড হচ্ছে...' : 'Downloading Android APK...');
-                }}
-                className="w-full py-2.5 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <ArrowDownToLine size={15} />
-                <span>{language === 'bn' ? 'অ্যান্ড্রয়েড APK সরাসরি ডাউনলোড (18 MB)' : 'Download Android APK Directly (18 MB)'}</span>
-              </a>
+              {/* Option B: Direct Android APK Download Button (ONLY FOR ANDROID) */}
+              {isAndroid && (
+                <a
+                  href="/Sadhana_app.apk"
+                  download="Sadhana_app.apk"
+                  onClick={() => {
+                    toast.success(language === 'bn' ? 'অ্যান্ড্রয়েড এপিকে ডাউনলোড হচ্ছে...' : 'Downloading Android APK...');
+                  }}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <ArrowDownToLine size={15} />
+                  <span>{language === 'bn' ? 'অ্যান্ড্রয়েড APK সরাসরি ডাউনলোড (18 MB)' : 'Download Android APK Directly (18 MB)'}</span>
+                </a>
+              )}
 
               {/* Secondary Close / Browser Continue Button */}
               <button
@@ -273,7 +358,7 @@ export const InstallPromptBanner: React.FC = () => {
             </div>
           </>
         ) : (
-          /* Step-by-Step Device Guide */
+          /* Step-by-Step Device Guide (for Chrome, Brave, Safari, etc.) */
           <div className="space-y-3.5 text-left">
             <div className="flex items-center gap-2">
               <button
@@ -289,19 +374,9 @@ export const InstallPromptBanner: React.FC = () => {
                     ? (language === 'bn' ? 'আইফোন / সাফারিতে ইনস্টল করার নিয়ম' : 'How to install on iOS Safari')
                     : isAndroid
                     ? (language === 'bn' ? 'অ্যান্ড্রয়েডে ইনস্টল বা APK ডাউনলোড' : 'Install on Android / Download APK')
-                    : (language === 'bn' ? 'ব্রাউজারে ইনস্টল করার নিয়ম' : 'How to install in browser')}
+                    : (language === 'bn' ? 'ডেস্কটপে ইনস্টল করার নিয়ম' : 'How to install on Desktop')}
                 </span>
               </h4>
-            </div>
-
-            {/* Clarification banner why native prompt didn't pop up */}
-            <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/80 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
-              <AlertCircle size={14} className="shrink-0 mt-0.5 text-amber-600" />
-              <span>
-                {language === 'bn'
-                  ? 'আপনার বর্তমান ব্রাউজার স্বয়ংক্রিয় ১-ক্লিক পপআপ সমর্থন করে না। নিচের সহজ নিয়মে ম্যানুয়ালি যুক্ত করুন অথবা সরাসরি APK ডাউনলোড করুন:'
-                  : 'Your browser requires manual confirmation. Follow the steps below or download the APK directly:'}
-              </span>
             </div>
 
             {isIos ? (
@@ -362,45 +437,45 @@ export const InstallPromptBanner: React.FC = () => {
                       : '2. Or tap Chrome menu (⋮) and select "Install app" or "Add to Home screen".'}
                   </p>
                 </div>
+
+                <a
+                  href="/Sadhana_app.apk"
+                  download="Sadhana_app.apk"
+                  onClick={() => {
+                    toast.success(language === 'bn' ? 'অ্যান্ড্রয়েড এপিকে ডাউনলোড হচ্ছে...' : 'Downloading Android APK...');
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+                >
+                  <ArrowDownToLine size={15} />
+                  <span>{language === 'bn' ? 'সরাসরি Android APK ডাউনলোড করুন' : 'Download Android APK Directly'}</span>
+                </a>
               </div>
             ) : (
+              /* Chrome, Brave, Edge Desktop Guide */
               <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                <div className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
                   <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
                     <Download size={15} />
                   </div>
                   <p>
                     {language === 'bn'
-                      ? '১. অ্যাড্রেস বারের ডানপাশে থাকা [⊕ Install] আইকনটিতে ক্লিক করুন।'
-                      : '1. Click the [⊕ Install] icon in your browser address bar.'}
+                      ? '১. Google Chrome বা Brave ব্রাউজারের অ্যাড্রেস বারের ডানপাশে থাকা [⊕ Install] আইকনটিতে ক্লিক করুন।'
+                      : '1. In Google Chrome or Brave, click the [⊕ Install] icon at the right edge of the address bar.'}
                   </p>
                 </div>
 
-                <div className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
                   <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
                     <CheckCircle2 size={15} />
                   </div>
                   <p>
                     {language === 'bn'
-                      ? '২. অথবা ব্রাউজার মেনু (⋮) থেকে "Install Sadhana" বা "Add to Home screen" চাপুন।'
-                      : '2. Or choose "Install Sadhana" or "Add to Home screen" from the browser menu (⋮).'}
+                      ? '২. অথবা ব্রাউজার মেনু (⋮) থেকে "Install Sadhana" বা "Save and Share > Install" বেছে নিন।'
+                      : '2. Or click the browser menu (⋮) and choose "Install Sadhana" or "Save and Share > Install".'}
                   </p>
                 </div>
               </div>
             )}
-
-            {/* Direct APK Download fallback link inside instructions */}
-            <a
-              href="/Sadhana_app.apk"
-              download="Sadhana_app.apk"
-              onClick={() => {
-                toast.success(language === 'bn' ? 'অ্যান্ড্রয়েড এপিকে ডাউনলোড হচ্ছে...' : 'Downloading Android APK...');
-              }}
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ArrowDownToLine size={15} />
-              <span>{language === 'bn' ? 'অথবা সরাসরি Android APK ডাউনলোড করুন' : 'Or Download Android APK Directly'}</span>
-            </a>
 
             <button
               type="button"
