@@ -3,9 +3,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import {
   Palette, BookOpen, Calendar, ShieldCheck,
-  Globe, Menu, Download, Sparkles, Check, X, Type
+  Globe, Menu, Download
 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import { Capacitor } from '@capacitor/core';
 import { DevoteeAvatar } from '../shared/DevoteeAvatar';
 import type { CounseleeProfile } from '../../types/sadhana';
@@ -226,22 +225,8 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
   const { language, toggleLanguage } = useLanguage();
   const { styles } = useTheme();
 
-  const [bannerFont, setBannerFont] = React.useState<BannerFontId>(() => {
-    return (localStorage.getItem('voice_banner_font') as BannerFontId) || 'cinzel';
-  });
-  const [isFontModalOpen, setIsFontModalOpen] = React.useState(false);
+  const bannerFont: BannerFontId = ((typeof window !== 'undefined' ? localStorage.getItem('voice_banner_font') : null) as BannerFontId) || 'cinzel';
   const activeFont = BANNER_FONTS.find(f => f.id === bannerFont) || BANNER_FONTS[0];
-
-  const handleSelectFont = (id: BannerFontId) => {
-    setBannerFont(id);
-    localStorage.setItem('voice_banner_font', id);
-    const selected = BANNER_FONTS.find(f => f.id === id);
-    toast.success(
-      language === 'bn' 
-        ? `ফন্ট নির্ধারিত হয়েছে: ${selected?.nameBn || id}` 
-        : `Banner font set to: ${selected?.name || id}`
-    );
-  };
 
   const [canInstall, setCanInstall] = React.useState(false);
 
@@ -329,24 +314,17 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
           </div>
 
           {/* Centerpiece: Sacred Invocation with Ethereal Om Accents */}
-          <div 
-            onClick={() => setIsFontModalOpen(true)}
-            className="flex items-center gap-1 sm:gap-2 shrink-0 px-0.5 sm:px-1 cursor-pointer group hover:scale-[1.01] transition-transform select-none"
-            title={language === 'bn' ? 'ফন্ট পরিবর্তন করতে ক্লিক করুন' : 'Click to preview & change font'}
-          >
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 px-0.5 sm:px-1 select-none">
             <span className="text-amber-200/90 font-light text-[10px] sm:text-xs select-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
               ॐ
             </span>
-            <h2 className={`${language === 'bn' ? activeFont.bnClass : activeFont.enClass} text-xs xs:text-[13px] sm:text-[15px] md:text-base text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] text-center whitespace-nowrap select-none group-hover:text-amber-200 transition-colors`}>
+            <h2 className={`${language === 'bn' ? activeFont.bnClass : activeFont.enClass} text-xs xs:text-[13px] sm:text-[15px] md:text-base text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] text-center whitespace-nowrap select-none`}>
               {language === 'bn'
                 ? 'শ্রীশ্রী গুরু ও গৌরাঙ্গ জয়তু'
                 : 'Shree Shree Guru and Gauranga Jayatu'}
             </h2>
             <span className="text-amber-200/90 font-light text-[10px] sm:text-xs select-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">
               ॐ
-            </span>
-            <span className="p-0.5 rounded-full bg-white/10 hover:bg-white/20 text-amber-200 transition-all hidden sm:inline-flex items-center justify-center opacity-70 group-hover:opacity-100" title={language === 'bn' ? 'ফন্ট অপশন' : 'Font Options'}>
-              <Sparkles className="w-2.5 h-2.5" />
             </span>
           </div>
 
@@ -518,111 +496,6 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
           );
         })}
       </div>
-      {/* Sacred Invocation Font Showcase Modal */}
-      {isFontModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-sm animate-scale-in">
-          <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            
-            {/* Modal Header */}
-            <div className={`bg-gradient-to-r ${styles.bannerGradient} p-4 sm:p-5 text-white flex items-center justify-between`}>
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-white/15 backdrop-blur-xs border border-white/20">
-                  <Type className="w-5 h-5 text-amber-200" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base sm:text-lg leading-tight">
-                    {language === 'bn' ? 'দিব্য আবাহনী ফন্ট নির্বাচন' : 'Sacred Invocation Typography'}
-                  </h3>
-                  <p className="text-xs text-amber-100/90 mt-0.5">
-                    {language === 'bn'
-                      ? 'শীর্ষ ব্যানারের জন্য আপনার পছন্দের ফন্ট বেছে নিন'
-                      : 'Choose your preferred typography for the top invocation banner'}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsFontModalOpen(false)}
-                className="p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-white/90 hover:text-white transition-colors cursor-pointer"
-                title="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Font Options List */}
-            <div className="p-3.5 sm:p-5 overflow-y-auto space-y-3 divide-y divide-slate-100 dark:divide-slate-800">
-              {BANNER_FONTS.map((font) => {
-                const isSelected = font.id === bannerFont;
-                return (
-                  <div
-                    key={font.id}
-                    onClick={() => handleSelectFont(font.id)}
-                    className={`pt-3 first:pt-0 p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/25 shadow-md ring-2 ring-amber-500/40'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700/60 bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100">
-                          {language === 'bn' ? font.nameBn : font.name}
-                        </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                          {language === 'bn' ? font.badgeBn : font.badge}
-                        </span>
-                      </div>
-                      {isSelected ? (
-                        <span className="flex items-center gap-1 text-xs font-extrabold text-amber-600 dark:text-amber-400">
-                          <Check className="w-4 h-4" />
-                          {language === 'bn' ? 'সক্রিয়' : 'Active'}
-                        </span>
-                      ) : (
-                        <span className="text-xs font-semibold text-slate-400 group-hover:text-amber-600">
-                          {language === 'bn' ? 'সিলেক্ট করুন' : 'Apply'}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2.5">
-                      {language === 'bn' ? font.descriptionBn : font.description}
-                    </p>
-
-                    {/* Live Realistic Banner Preview */}
-                    <div className={`bg-gradient-to-r ${styles.bannerGradient} rounded-xl py-2 px-3 sm:px-4 text-white flex items-center justify-center gap-2 shadow-xs border border-amber-400/20 overflow-hidden`}>
-                      <span className="text-amber-200/80 text-[10px] select-none">✦ ॐ</span>
-                      <span className={`${language === 'bn' ? font.bnClass : font.enClass} text-amber-50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] text-center whitespace-nowrap`}>
-                        {language === 'bn'
-                          ? 'শ্রীশ্রী গুরু ও গৌরাঙ্গ জয়তু'
-                          : 'Shree Shree Guru and Gauranga Jayatu'}
-                      </span>
-                      <span className="text-amber-200/80 text-[10px] select-none">ॐ ✦</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {language === 'bn'
-                  ? 'পছন্দটি ডিভাইসে সংরক্ষিত থাকবে।'
-                  : 'Preference is saved.'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsFontModalOpen(false)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r ${styles.bannerGradient} text-white shadow-md hover:opacity-95 transition-opacity cursor-pointer`}
-              >
-                {language === 'bn' ? 'সম্পন্ন' : 'Done'}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
     </header>
   );
 };
