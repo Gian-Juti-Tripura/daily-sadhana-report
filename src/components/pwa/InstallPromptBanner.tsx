@@ -19,14 +19,15 @@ export const InstallPromptBanner: React.FC = () => {
   const [installStatusMsg, setInstallStatusMsg] = useState<string | null>(null);
 
   // Platform & Browser detection
-  const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-  const isIos = typeof navigator !== 'undefined' && (
-    /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  );
-  const isFirefox = typeof navigator !== 'undefined' && /Firefox/i.test(navigator.userAgent);
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const isFirefox = /Firefox/i.test(ua);
+  const isEdge = /Edg/i.test(ua);
+  const isChrome = /Chrome/i.test(ua) && !isEdge && !isFirefox;
+  const isBrave = typeof (navigator as any)?.brave !== 'undefined';
+  const isIos = /iPad|iPhone|iPod/.test(ua) || (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(ua);
   const isDesktop = !isAndroid && !isIos;
-  const isLinux = typeof navigator !== 'undefined' && /Linux/i.test(navigator.userAgent) && !isAndroid;
+  const isLinux = /Linux/i.test(ua) && !isAndroid;
 
   useEffect(() => {
     // 0. Do not show inside native Android / iOS Capacitor apps
@@ -319,7 +320,13 @@ export const InstallPromptBanner: React.FC = () => {
                   className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm shadow-lg shadow-amber-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Laptop size={17} />
-                  <span>{language === 'bn' ? 'ডেস্কটপে ইনস্টল করার নিয়ম দেখুন' : 'How to Install on Desktop'}</span>
+                  <span>
+                    {isChrome 
+                      ? (language === 'bn' ? 'ক্রোমে ইনস্টল করার নিয়ম দেখুন' : 'How to Install in Chrome') 
+                      : isBrave 
+                      ? (language === 'bn' ? 'Brave-এ ইনস্টল করার নিয়ম দেখুন' : 'How to Install in Brave') 
+                      : (language === 'bn' ? 'ডেস্কটপে ইনস্টল করার নিয়ম দেখুন' : 'How to Install on Desktop')}
+                  </span>
                 </button>
               ) : (
                 <button
@@ -459,8 +466,8 @@ export const InstallPromptBanner: React.FC = () => {
                   </div>
                   <p>
                     {language === 'bn'
-                      ? '১. Google Chrome বা Brave ব্রাউজারের অ্যাড্রেস বারের ডানপাশে থাকা [⊕ Install] আইকনটিতে ক্লিক করুন।'
-                      : '1. In Google Chrome or Brave, click the [⊕ Install] icon at the right edge of the address bar.'}
+                      ? `১. ${isBrave ? 'Brave' : isEdge ? 'Microsoft Edge' : 'Google Chrome'} ব্রাউজারের অ্যাড্রেস বারের ডানপাশে থাকা [⊕ Install] আইকনটিতে ক্লিক করুন।`
+                      : `1. In ${isBrave ? 'Brave' : isEdge ? 'Microsoft Edge' : 'Google Chrome'}, click the [⊕ Install] icon at the right edge of the address bar.`}
                   </p>
                 </div>
 
