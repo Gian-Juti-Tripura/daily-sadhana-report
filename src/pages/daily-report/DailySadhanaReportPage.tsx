@@ -337,7 +337,7 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 (৩) দিবানিদ্রা: ${toBnNum(dayRestMinutes)} মিনিট
 
 *আত্মা*
-(১) জপ: ${toBnNum(japaRounds)} মালা (জপ সমাপ্তির সময়: ${toBnNum(japaCompletionTime)})
+(১) জপ: ${toBnNum(japaRounds)} মালা (সময়: ${toBnNum(japaCompletionTime)})
 (২) শাস্ত্রীয় অধ্যয়ন: ${toBnNum(scriptureStudyMinutes)} মিনিট
     (ক) অধ্যয়নকৃত গ্রন্থ: ${formattedBookBn}
     (খ) নোট: ${scriptureNotes ? 'হ্যাঁ' : 'না'}
@@ -373,7 +373,7 @@ export const DailySadhanaReportPage: React.FC<DailySadhanaReportPageProps> = ({
 
     return `*Daily Sadhana Report — ${reportDate}*
 *${activeDevotee.name}*
-Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
+Staying at: *${stayingAt}*
 
 *Body*
 (1) Bed time: ${wentToBed}
@@ -381,7 +381,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 (3) Day rest: ${dayRestMinutes} min
 
 *Soul*
-(1) Japa: ${japaRounds} rounds (Completion time: ${japaCompletionTime})
+(1) Japa: ${japaRounds} rounds (Time: ${japaCompletionTime})
 (2) Scripture study: ${scriptureStudyMinutes} min
     (a) Book studied: ${formattedBookEn}
     (b) Notes: ${scriptureNotes ? 'Yes' : 'No'}
@@ -690,7 +690,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
           <div className="space-y-4">
             
-            {/* (1) Japa & Completion Time */}
+            {/* (1) Japa & Time */}
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
@@ -713,7 +713,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
 
               <div>
                 <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 block mb-1">
-                  {language === 'bn' ? 'জপ সমাপ্তি' : 'Completion Time'}
+                  {language === 'bn' ? 'সময়' : 'Time'}
                 </label>
                 <div className="flex items-center space-x-2">
                   <input
@@ -1496,7 +1496,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               DATE & LOCATION:
             </span>
             <span className="font-bold text-slate-800 text-xs block leading-normal">
-              {reportDate} ({stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt})
+              {reportDate} ({stayingAt})
             </span>
           </div>
           <div>
@@ -1572,7 +1572,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <tr className="bg-slate-50 text-[10px] text-slate-500 font-bold border-b border-slate-200">
                 <th className="py-2 pl-3.5 text-left">Practice</th>
                 <th className="py-2 text-left">Details</th>
-                <th className="py-2 text-left">Completion & Notes</th>
+                <th className="py-2 text-left">Time & Notes</th>
                 <th className="py-2 pr-3.5 text-right">Marks Earned</th>
               </tr>
             </thead>
@@ -1580,7 +1580,7 @@ Staying at: *${stayingAt === 'VOICE' ? 'VOICE Ashram' : stayingAt}*
               <tr>
                 <td className="py-2 pl-3.5 font-bold text-slate-800">(1) Japa Chanting</td>
                 <td className="py-2 font-bold text-slate-900">{japaRounds} rounds</td>
-                <td className="py-2 text-slate-600 text-[11px]">Finished: {japaCompletionTime}</td>
+                <td className="py-2 text-slate-600 text-[11px]">Time: {japaCompletionTime}</td>
                 <td className="py-2 pr-3.5 text-right font-black text-amber-700">
                   +{scoreBreakdown.japaMarks} / 25
                 </td>
