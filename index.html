@@ -23,6 +23,22 @@
     <meta name="description" content="Daily Sadhana Report and Digital Sadhana Card 7-Day Matrix for HG Rashbihari Krishna Chandra Das Brahmachari & Central VOICE Counselors, IYF Chittagong." />
     <meta name="theme-color" content="#f59e0b" />
     
+    <!-- Early capture of PWA beforeinstallprompt so it is NEVER lost on load -->
+    <script>
+      window.deferredInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.deferredInstallPrompt = e;
+        window.dispatchEvent(new CustomEvent('pwa_prompt_ready'));
+      });
+      window.addEventListener('appinstalled', function() {
+        window.deferredInstallPrompt = null;
+        window.dispatchEvent(new CustomEvent('pwa_installed_success'));
+        console.log('Sadhana PWA was successfully installed');
+      });
+    </script>
+    <script src="/registerSW.js"></script>
+
     <!-- Automatic Stale Deployment Recovery (Auto-reloads if old CSS/JS chunk hashes mismatch) -->
     <script>
       window.addEventListener('vite:preloadError', function() {

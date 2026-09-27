@@ -138,9 +138,21 @@ export const CounselorNavbar: React.FC<CounselorNavbarProps> = ({
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches || 
       (window.navigator as any).standalone === true;
-    if (!isStandalone) {
+    const isInstalled = sessionStorage.getItem('sadhana_pwa_installed') === 'true';
+    if (!isStandalone && !isInstalled) {
       setCanInstall(true);
     }
+
+    const handleInstalled = () => {
+      setCanInstall(false);
+    };
+
+    window.addEventListener('appinstalled', handleInstalled);
+    window.addEventListener('pwa_installed_success', handleInstalled);
+    return () => {
+      window.removeEventListener('appinstalled', handleInstalled);
+      window.removeEventListener('pwa_installed_success', handleInstalled);
+    };
   }, []);
 
   const tabs: {
