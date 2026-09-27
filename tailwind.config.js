@@ -21,9 +21,15 @@ export default {
         bengali: ['"Hind Siliguri"', '"Noto Serif Bengali"', 'sans-serif'],
         serifBengali: ['"Noto Serif Bengali"', 'serif'],
         cinzel: ['"Cinzel"', 'serif'],
+        cinzelDeco: ['"Cinzel Decorative"', 'serif'],
         playfair: ['"Playfair Display"', 'Georgia', 'serif'],
         cormorant: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         vibes: ['"Great Vibes"', 'cursive'],
+        alexBrush: ['"Alex Brush"', 'cursive'],
+        marcellus: ['"Marcellus"', 'serif'],
+        rozha: ['"Rozha One"', 'serif'],
+        galada: ['"Galada"', 'cursive'],
+        tiro: ['"Tiro Bangla"', 'serif'],
       },
       colors: {
         saffron: {

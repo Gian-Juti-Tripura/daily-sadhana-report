@@ -21,6 +21,19 @@
     letter-spacing: 0.012em;
   }
 
+  /* Specific typography overrides that should not be superseded by language rules */
+  .font-cinzel { font-family: 'Cinzel', serif !important; }
+  .font-cinzelDeco { font-family: 'Cinzel Decorative', serif !important; }
+  .font-playfair { font-family: 'Playfair Display', Georgia, serif !important; }
+  .font-cormorant { font-family: 'Cormorant Garamond', Georgia, serif !important; }
+  .font-vibes { font-family: 'Great Vibes', cursive !important; }
+  .font-alexBrush { font-family: 'Alex Brush', cursive !important; }
+  .font-marcellus { font-family: 'Marcellus', serif !important; }
+  .font-rozha { font-family: 'Rozha One', serif !important; }
+  .font-serifBengali { font-family: 'Noto Serif Bengali', serif !important; }
+  .font-galada { font-family: 'Galada', cursive !important; }
+  .font-tiro { font-family: 'Tiro Bangla', serif !important; }
+
   [data-lang="bn"] button,
   [data-lang="bn"] input,
   [data-lang="bn"] select,
