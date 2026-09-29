@@ -11,6 +11,7 @@ import {
   DEFAULT_GUEST_DEVOTEE
 } from '../../data/counseleesData';
 import { supabase } from '../../supabase/supabaseClient';
+import { Capacitor } from '@capacitor/core';
 import { toast } from 'react-hot-toast';
 
 interface DevoteeAuthModalProps {
@@ -49,6 +50,13 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
   const [counselor, setCounselor] = useState('Prabhupad');
   const [selectedDevoteeId, setSelectedDevoteeId] = useState(activeDevotee.id);
   const [showDevoteePicker, setShowDevoteePicker] = useState(false);
+
+  // Check if running inside APK (Capacitor native) or standalone PWA
+  const isNativeOrInstalled = Capacitor.isNativePlatform() || 
+    (typeof window !== 'undefined' && (
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true
+    ));
 
   // Sync registered list and load remembered credentials when modal opens
   useEffect(() => {
@@ -680,20 +688,22 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
             </div>
           )}
 
-          {/* Quick Install PWA Option */}
-          <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                window.dispatchEvent(new CustomEvent('open_pwa_install_modal'));
-              }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>{language === 'bn' ? 'সাধনা অ্যাপ ইনস্টল করুন (PWA)' : 'Install Sadhana App (PWA)'}</span>
-            </button>
-          </div>
+          {/* Quick Install PWA Option (Hidden in APK / native app / standalone PWA) */}
+          {!isNativeOrInstalled && (
+            <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  window.dispatchEvent(new CustomEvent('open_pwa_install_modal'));
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{language === 'bn' ? 'সাধনা অ্যাপ ইনস্টল করুন (PWA)' : 'Install Sadhana App (PWA)'}</span>
+              </button>
+            </div>
+          )}
 
         </div>
       </div>
