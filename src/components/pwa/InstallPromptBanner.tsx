@@ -86,24 +86,6 @@ export const InstallPromptBanner: React.FC = () => {
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('pwa_installed_success', handleAppInstalled);
     window.addEventListener('open_pwa_install_modal', handleManualOpen);
-
-    // 5. Automatic pop-up fallback on first visit (800ms delay)
-    const isDismissed = sessionStorage.getItem('sadhana_pwa_dismissed_session');
-    const hasInstalled = sessionStorage.getItem('sadhana_pwa_installed');
-    if (!standaloneMode && !isDismissed && !hasInstalled) {
-      const timer = setTimeout(() => {
-        setShowModal(true);
-      }, 800);
-      return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        window.removeEventListener('pwa_prompt_ready', handlePromptReady);
-        window.removeEventListener('appinstalled', handleAppInstalled);
-        window.removeEventListener('pwa_installed_success', handleAppInstalled);
-        window.removeEventListener('open_pwa_install_modal', handleManualOpen);
-        clearTimeout(timer);
-      };
-    }
-
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('pwa_prompt_ready', handlePromptReady);

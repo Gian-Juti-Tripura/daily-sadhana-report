@@ -9,10 +9,16 @@ import { CounselorDeskPage } from './pages/counselor/CounselorDeskPage';
 import { DevoteeProfileModal } from './components/profile/DevoteeProfileModal';
 import { ThemeCustomizerModal } from './components/theme/ThemeCustomizerModal';
 import { DevoteeAuthModal } from './components/auth/DevoteeAuthModal';
+import { DevoteeLoginScreen } from './components/auth/DevoteeLoginScreen';
 import { InstallPromptBanner } from './components/pwa/InstallPromptBanner';
 import { FallingFlowers } from './components/effects/FallingFlowers';
 import { Toaster } from 'react-hot-toast';
-import { getRegisteredCounselees, DEFAULT_GUEST_DEVOTEE } from './data/counseleesData';
+import { 
+  getRegisteredCounselees, 
+  addRegisteredCounselee, 
+  DEFAULT_GUEST_DEVOTEE,
+  PRIMARY_COUNSELOR 
+} from './data/counseleesData';
 import { supabase } from './supabase/supabaseClient';
 import type { CounseleeProfile } from './types/sadhana';
 
@@ -20,7 +26,12 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'DAILY_REPORT' | 'DIGITAL_CARD' | 'COUNSELOR_DESK'>('DAILY_REPORT');
   const { settings, paletteConfig } = useTheme();
 
-  // Active Devotee state: defaults to saved devotee if logged in, or DEFAULT_GUEST_DEVOTEE for clean sessions
+  // Authentication state: if no saved logged in user ID, show DevoteeLoginScreen
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem('voice_logged_in_user_id');
+  });
+
+  // Active Devotee state: defaults to saved devotee if logged in, or DEFAULT_GUEST_DEVOTEE
   const counselees = getRegisteredCounselees();
   const [activeDevotee, setActiveDevotee] = useState<CounseleeProfile>(() => {
     const savedId = localStorage.getItem('voice_active_devotee_id') || localStorage.getItem('voice_logged_in_user_id');
@@ -36,36 +47,60 @@ const AppContent: React.FC = () => {
     return initial;
   });
 
-  // Modal states: Login window appears first upon opening the app
+  // Modal states: Modals only triggered by explicit user action
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(() => {
-    const isLoggedIn = localStorage.getItem('voice_logged_in_user_id');
-    const dismissedThisSession = sessionStorage.getItem('voice_login_dismissed_session');
-    return !isLoggedIn || !dismissedThisSession;
-  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Sync Supabase Auth session on mount and changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.email) {
-        const userEmail = session.user.email.toLowerCase();
+      if (session?.user) {
+        setIsAuthenticated(true);
+        const userEmail = session.user.email?.toLowerCase();
         const list = getRegisteredCounselees();
-        const devotee = list.find(d => d.email && d.email.toLowerCase() === userEmail);
+        let devotee = userEmail ? list.find(d => d.email && d.email.toLowerCase() === userEmail) : null;
+        if (!devotee && session.user.id) {
+          devotee = list.find(d => d.id === session.user.id);
+        }
+        if (!devotee && userEmail) {
+          devotee = addRegisteredCounselee({
+            id: session.user.id,
+            name: session.user.user_metadata?.full_name || userEmail.split('@')[0],
+            email: userEmail,
+            counselorName: session.user.user_metadata?.counselor || PRIMARY_COUNSELOR.name,
+            scaleId: 2,
+            spiritualTitle: 'Bhakti Aspirant'
+          });
+        }
         if (devotee) {
           handleSelectDevotee(devotee);
         }
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email) {
-        const userEmail = session.user.email.toLowerCase();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        const userEmail = session.user.email?.toLowerCase();
         const list = getRegisteredCounselees();
-        const devotee = list.find(d => d.email && d.email.toLowerCase() === userEmail);
+        let devotee = userEmail ? list.find(d => d.email && d.email.toLowerCase() === userEmail) : null;
+        if (!devotee && userEmail) {
+          devotee = addRegisteredCounselee({
+            id: session.user.id,
+            name: session.user.user_metadata?.full_name || userEmail.split('@')[0],
+            email: userEmail,
+            counselorName: session.user.user_metadata?.counselor || PRIMARY_COUNSELOR.name,
+            scaleId: 2,
+            spiritualTitle: 'Bhakti Aspirant'
+          });
+        }
         if (devotee) {
           handleSelectDevotee(devotee);
         }
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+        setActiveDevotee(DEFAULT_GUEST_DEVOTEE);
       }
     });
 
@@ -74,6 +109,13 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     const handleOpenAuth = () => setIsAuthModalOpen(true);
+    const handleOpenProfile = () => setIsProfileModalOpen(true);
+    const handleLogoutEvent = () => {
+      setIsAuthenticated(false);
+      setIsAuthModalOpen(false);
+      setActiveDevotee(DEFAULT_GUEST_DEVOTEE);
+    };
+
     const handleCounselorUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<string>;
       if (customEvent.detail) {
@@ -96,11 +138,15 @@ const AppContent: React.FC = () => {
     };
 
     window.addEventListener('open_voice_auth_modal', handleOpenAuth);
+    window.addEventListener('open_devotee_profile_modal', handleOpenProfile);
+    window.addEventListener('voice_devotee_logged_out', handleLogoutEvent);
     window.addEventListener('voice_counselor_changed', handleCounselorUpdate);
     window.addEventListener('voice_devotees_updated', handleDevoteesUpdated);
 
     return () => {
       window.removeEventListener('open_voice_auth_modal', handleOpenAuth);
+      window.removeEventListener('open_devotee_profile_modal', handleOpenProfile);
+      window.removeEventListener('voice_devotee_logged_out', handleLogoutEvent);
       window.removeEventListener('voice_counselor_changed', handleCounselorUpdate);
       window.removeEventListener('voice_devotees_updated', handleDevoteesUpdated);
     };
@@ -111,11 +157,34 @@ const AppContent: React.FC = () => {
     const effectiveDevotee = savedCounselor ? { ...devotee, counselorName: savedCounselor } : devotee;
     setActiveDevotee(effectiveDevotee);
     localStorage.setItem('voice_active_devotee_id', devotee.id);
+    localStorage.setItem('voice_logged_in_user_id', devotee.id);
     if (effectiveDevotee.counselorName) {
       localStorage.setItem('voice_selected_counselor', effectiveDevotee.counselorName);
       localStorage.setItem(`voice_counselor_${devotee.id}`, effectiveDevotee.counselorName);
     }
   };
+
+  // If user is not authenticated, show the clean, professional, dedicated login screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors relative">
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            className: 'dark:bg-slate-800 dark:text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700',
+            duration: 3000
+          }}
+        />
+        <DevoteeLoginScreen
+          onLoginSuccess={(devotee) => {
+            handleSelectDevotee(devotee);
+            setIsAuthenticated(true);
+          }}
+        />
+        <InstallPromptBanner />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors relative">
@@ -202,7 +271,7 @@ const AppContent: React.FC = () => {
         onSelectDevotee={handleSelectDevotee}
       />
 
-      {/* Devotee Login / Sign Up / Log Out Modal (triggered by 3-bar button) */}
+      {/* Devotee Account & Logout Modal */}
       <DevoteeAuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
@@ -210,7 +279,7 @@ const AppContent: React.FC = () => {
         onSelectDevotee={handleSelectDevotee}
       />
 
-      {/* PWA Install Prompt Banner */}
+      {/* PWA Install Modal (Triggered on demand) */}
       <InstallPromptBanner />
     </div>
   );
