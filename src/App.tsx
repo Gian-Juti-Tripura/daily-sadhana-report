@@ -26,17 +26,18 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'DAILY_REPORT' | 'DIGITAL_CARD' | 'COUNSELOR_DESK'>('DAILY_REPORT');
   const { settings, paletteConfig } = useTheme();
 
-  // Authentication state: if no saved logged in user ID, show DevoteeLoginScreen
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!localStorage.getItem('voice_logged_in_user_id');
-  });
-
-  // Active Devotee state: defaults to saved devotee if logged in, or DEFAULT_GUEST_DEVOTEE
   const counselees = getRegisteredCounselees();
+
+  // Authentication state: if no saved logged in user ID matching registered devotee, show DevoteeLoginScreen
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const loggedInId = localStorage.getItem('voice_logged_in_user_id');
+    if (!loggedInId) return false;
+    return counselees.some(c => c.id === loggedInId);
+  });
   const [activeDevotee, setActiveDevotee] = useState<CounseleeProfile>(() => {
     const savedId = localStorage.getItem('voice_active_devotee_id') || localStorage.getItem('voice_logged_in_user_id');
-    const found = counselees.find(c => c.id === savedId);
-    const initial = found || (localStorage.getItem('voice_logged_in_user_id') ? counselees[0] : DEFAULT_GUEST_DEVOTEE);
+    const found = savedId ? counselees.find(c => c.id === savedId) : undefined;
+    const initial = found || (counselees.length > 0 ? counselees[0] : DEFAULT_GUEST_DEVOTEE);
     const savedCounselor = localStorage.getItem(`voice_counselor_${initial.id}`) || localStorage.getItem('voice_selected_counselor');
     if (savedCounselor && initial.counselorName !== savedCounselor) {
       return {
