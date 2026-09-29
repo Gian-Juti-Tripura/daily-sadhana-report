@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { 
-  X, Eye, EyeOff, ChevronDown, LogOut, Download
+  X, Eye, EyeOff, ChevronDown, LogOut, Download, Loader2
 } from 'lucide-react';
 import type { CounseleeProfile } from '../../types/sadhana';
 import { 
   getRegisteredCounselees, 
   addRegisteredCounselee, 
-  PRIMARY_COUNSELOR
+  PRIMARY_COUNSELOR,
+  DEFAULT_GUEST_DEVOTEE
 } from '../../data/counseleesData';
+import { supabase } from '../../supabase/supabaseClient';
 import { toast } from 'react-hot-toast';
 
 interface DevoteeAuthModalProps {
@@ -29,10 +31,19 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
   const [registerRole, setRegisterRole] = useState<'COUNSELEE' | 'COUNSELLOR'>('COUNSELEE');
   const [showPassword, setShowPassword] = useState(false);
   const [counselees, setCounselees] = useState<CounseleeProfile[]>(getRegisteredCounselees());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states with auto-remembered credentials
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState(() => localStorage.getItem('voice_remembered_username') || activeDevotee.email || '');
+  const [email, setEmail] = useState(() => {
+    const remembered = localStorage.getItem('voice_remembered_username');
+    if (remembered) return remembered;
+    const loggedInId = localStorage.getItem('voice_logged_in_user_id');
+    if (loggedInId && activeDevotee.id === loggedInId && activeDevotee.email) {
+      return activeDevotee.email;
+    }
+    return '';
+  });
   const [password, setPassword] = useState(() => localStorage.getItem('voice_remembered_password') || '');
   const [rememberCredentials, setRememberCredentials] = useState(true);
   const [counselor, setCounselor] = useState('Prabhupad');
@@ -49,11 +60,18 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
       const rememberedPass = localStorage.getItem('voice_remembered_password');
       if (rememberedUser) {
         setEmail(rememberedUser);
-      } else if (activeDevotee.email) {
-        setEmail(activeDevotee.email);
+      } else {
+        const loggedInId = localStorage.getItem('voice_logged_in_user_id');
+        if (loggedInId && activeDevotee.id === loggedInId && activeDevotee.email) {
+          setEmail(activeDevotee.email);
+        } else {
+          setEmail('');
+        }
       }
       if (rememberedPass) {
         setPassword(rememberedPass);
+      } else {
+        setPassword('');
       }
     }
   }, [isOpen, activeDevotee]);
@@ -75,109 +93,218 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
   };
 
   // Handle Logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('Supabase signOut notice:', e);
+    }
     localStorage.removeItem('voice_logged_in_user_id');
     localStorage.removeItem('voice_active_devotee_id');
-    const fresh = getRegisteredCounselees();
-    if (fresh.length > 0) {
-      onSelectDevotee(fresh[0]);
-    }
+    localStorage.removeItem('voice_remembered_username');
+    localStorage.removeItem('voice_remembered_password');
+    localStorage.removeItem('voice_auth_role');
+    sessionStorage.removeItem('voice_login_dismissed_session');
+
+    onSelectDevotee(DEFAULT_GUEST_DEVOTEE);
     toast.success(language === 'bn' ? 'সফলভাবে লগআউট হয়েছে' : 'Logged out successfully');
     handleModalClose();
   };
 
   // Handle Login
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 1. Try matching by email
     const trimmedEmail = email.trim().toLowerCase();
-    let found = counselees.find(c => c.email && c.email.toLowerCase() === trimmedEmail);
-
-    // 2. If not found by email, try matching by selected devotee
-    if (!found && selectedDevoteeId) {
-      found = counselees.find(c => c.id === selectedDevoteeId);
+    if (!trimmedEmail) {
+      toast.error(language === 'bn' ? 'দয়া করে ইমেইল বা ইউজারনেম লিখুন' : 'Please enter your email or username');
+      return;
     }
 
-    // 3. If still not found, check if email matches a devotee name
-    if (!found && trimmedEmail) {
-      found = counselees.find(c => c.name.toLowerCase().includes(trimmedEmail));
-    }
-
-    if (found) {
-      localStorage.setItem('voice_logged_in_user_id', found.id);
-      localStorage.setItem('voice_active_devotee_id', found.id);
-      if (rememberCredentials) {
-        localStorage.setItem('voice_remembered_username', email.trim() || found.email || found.name);
-        if (password) {
-          localStorage.setItem('voice_remembered_password', password);
+    setIsSubmitting(true);
+    try {
+      // 1. If password provided, attempt Supabase Auth sign in
+      if (password.trim()) {
+        try {
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: trimmedEmail,
+            password: password.trim()
+          });
+          if (!authError && authData?.user) {
+            console.log('Supabase Auth login success for:', trimmedEmail);
+          }
+        } catch (authErr) {
+          console.warn('Supabase Auth attempt completed with notice:', authErr);
         }
       }
-      onSelectDevotee(found);
-      toast.success(
-        language === 'bn' 
-          ? `স্বাগতম ${found.name}! সফলভাবে লগইন হয়েছে` 
-          : `Welcome ${found.name}! Logged in successfully`
+
+      // 2. Match against registered counselees (all 12 ashram members + any previously added)
+      const freshCounselees = getRegisteredCounselees();
+      let found = freshCounselees.find(c => 
+        (c.email && c.email.toLowerCase() === trimmedEmail) ||
+        (c.name && c.name.toLowerCase() === trimmedEmail) ||
+        (c.phone && c.phone.replace(/\D/g, '') === trimmedEmail.replace(/\D/g, ''))
       );
-      handleModalClose();
-    } else {
-      // Fallback: If devotee doesn't exist yet, create or log in
-      if (!email.trim()) {
-        toast.error(language === 'bn' ? 'দয়া করে ইমেইল লিখুন' : 'Please enter your email');
-        return;
+
+      // 3. If not found in local counselees, check Supabase members table
+      if (!found) {
+        try {
+          const { data: member } = await supabase
+            .from('members')
+            .select('*')
+            .or(`email.ilike.${trimmedEmail},phone.eq.${trimmedEmail}`)
+            .maybeSingle();
+
+          if (member) {
+            found = addRegisteredCounselee({
+              id: member.id,
+              name: member.full_name || trimmedEmail.split('@')[0],
+              spiritualName: member.spiritual_name || '',
+              phone: member.phone || '',
+              email: member.email || trimmedEmail,
+              roomNo: member.address || '',
+              department: member.department || '',
+              institution: member.institute || 'University of Chittagong',
+              scaleId: member.scale_id || 2,
+              counselorName: member.counselor_name || PRIMARY_COUNSELOR.name,
+              spiritualTitle: member.service_type || member.role_badge || 'Ashram Devotee',
+              avatarUrl: member.photo_url || undefined
+            });
+          }
+        } catch (supaErr) {
+          console.warn('Supabase members search offline/failed:', supaErr);
+        }
       }
-      toast.error(
-        language === 'bn' 
-          ? 'এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি। নিবন্ধন করুন।' 
-          : 'Account not found with this email. Please register.'
-      );
-      setAuthMode('REGISTER');
+
+      // 4. If devotee account found, set active and save credentials
+      if (found) {
+        localStorage.setItem('voice_logged_in_user_id', found.id);
+        localStorage.setItem('voice_active_devotee_id', found.id);
+        const isAdmin = found.id === 'member_5' || 
+                        trimmedEmail === 'dipendranathroy2003@gmail.com' || 
+                        trimmedEmail === 'gianjuti.csecu@gmail.com';
+        localStorage.setItem('voice_auth_role', isAdmin ? 'ADMIN' : 'MEMBER');
+
+        if (rememberCredentials) {
+          localStorage.setItem('voice_remembered_username', trimmedEmail || found.email || found.name);
+          if (password) {
+            localStorage.setItem('voice_remembered_password', password);
+          }
+        } else {
+          localStorage.removeItem('voice_remembered_username');
+          localStorage.removeItem('voice_remembered_password');
+        }
+
+        onSelectDevotee(found);
+        window.dispatchEvent(new CustomEvent('voice_devotees_updated', { detail: found }));
+        toast.success(
+          language === 'bn' 
+            ? `স্বাগতম ${found.name}! সফলভাবে লগইন হয়েছে` 
+            : `Welcome ${found.name}! Logged in successfully`
+        );
+        handleModalClose();
+      } else {
+        // Safe check: If user typed an email that isn't registered, prompt registration
+        toast.error(
+          language === 'bn' 
+            ? 'এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি। অনুগ্রহ করে নিচের ফর্মে নিবন্ধন করুন।' 
+            : 'Account not found with this email. Please register below.'
+        );
+        setAuthMode('REGISTER');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      toast.error(err.message || 'Login failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Handle Register
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) {
       toast.error(language === 'bn' ? 'দয়া করে নাম লিখুন' : 'Please enter your name');
       return;
     }
-
-    const newProfile = addRegisteredCounselee({
-      name: fullName.trim(),
-      spiritualName: '',
-      phone: '',
-      email: email.trim(),
-      counselorName: registerRole === 'COUNSELLOR' ? 'Self (Counselor)' : counselor,
-      scaleId: 2,
-      institution: 'University of Chittagong',
-      roomNo: '',
-      department: '',
-      completedCourses: ['dys'],
-      completedCamps: ['camp_sankalpa'],
-      spiritualTitle: registerRole === 'COUNSELLOR' ? 'Counselor & Mentor' : 'Bhakti Aspirant'
-    });
-
-    window.dispatchEvent(new CustomEvent('voice_devotees_updated', { detail: newProfile }));
-
-    localStorage.setItem('voice_logged_in_user_id', newProfile.id);
-    localStorage.setItem('voice_active_devotee_id', newProfile.id);
-    if (rememberCredentials) {
-      localStorage.setItem('voice_remembered_username', email.trim() || newProfile.email || '');
-      if (password) {
-        localStorage.setItem('voice_remembered_password', password);
-      }
+    if (!email.trim()) {
+      toast.error(language === 'bn' ? 'দয়া করে ইমেইল লিখুন' : 'Please enter your email');
+      return;
     }
-    onSelectDevotee(newProfile);
 
-    toast.success(
-      language === 'bn'
-        ? `অভিনন্দন ${newProfile.name}! আপনার অ্যাকাউন্ট তৈরি হয়েছে`
-        : `Congratulations ${newProfile.name}! Account created successfully`
-    );
+    setIsSubmitting(true);
+    const trimmedEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
 
-    setFullName('');
-    handleModalClose();
+    try {
+      // 1. Register or update devotee in counseleesData
+      const newProfile = addRegisteredCounselee({
+        name: cleanName,
+        spiritualName: '',
+        phone: '',
+        email: trimmedEmail,
+        counselorName: registerRole === 'COUNSELLOR' ? 'Self (Counselor)' : counselor,
+        scaleId: 2,
+        institution: 'University of Chittagong',
+        roomNo: '',
+        department: '',
+        completedCourses: ['dys'],
+        completedCamps: ['camp_sankalpa'],
+        spiritualTitle: registerRole === 'COUNSELLOR' ? 'Counselor & Mentor' : 'Bhakti Aspirant'
+      });
+
+      // 2. Attempt Supabase Auth sign up
+      if (password.trim()) {
+        try {
+          await supabase.auth.signUp({
+            email: trimmedEmail,
+            password: password.trim(),
+            options: {
+              data: {
+                full_name: cleanName,
+                counselor: registerRole === 'COUNSELLOR' ? 'Self (Counselor)' : counselor
+              }
+            }
+          });
+        } catch (supaErr) {
+          console.warn('Supabase sign up offline/notice:', supaErr);
+        }
+      }
+
+      // 3. Save session
+      localStorage.setItem('voice_logged_in_user_id', newProfile.id);
+      localStorage.setItem('voice_active_devotee_id', newProfile.id);
+      const isAdmin = newProfile.id === 'member_5' || 
+                      trimmedEmail === 'dipendranathroy2003@gmail.com' || 
+                      trimmedEmail === 'gianjuti.csecu@gmail.com';
+      localStorage.setItem('voice_auth_role', isAdmin ? 'ADMIN' : 'MEMBER');
+
+      if (rememberCredentials) {
+        localStorage.setItem('voice_remembered_username', trimmedEmail);
+        if (password) {
+          localStorage.setItem('voice_remembered_password', password);
+        }
+      } else {
+        localStorage.removeItem('voice_remembered_username');
+        localStorage.removeItem('voice_remembered_password');
+      }
+
+      onSelectDevotee(newProfile);
+      window.dispatchEvent(new CustomEvent('voice_devotees_updated', { detail: newProfile }));
+
+      toast.success(
+        language === 'bn'
+          ? `অভিনন্দন ${newProfile.name}! আপনার অ্যাকাউন্ট তৈরি হয়েছে`
+          : `Congratulations ${newProfile.name}! Account created successfully`
+      );
+
+      setFullName('');
+      handleModalClose();
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      toast.error(err.message || 'Registration failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -315,9 +442,15 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
                 {/* Register Button */}
                 <button
                   type="submit"
-                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#F25119] hover:bg-[#d9440f] active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#F25119] hover:bg-[#d9440f] active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <span>{language === 'bn' ? 'নিবন্ধন করুন' : 'Register'}</span>
+                  {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                  <span>
+                    {isSubmitting
+                      ? (language === 'bn' ? 'অপেক্ষা করুন...' : 'Creating account...')
+                      : (language === 'bn' ? 'নিবন্ধন করুন' : 'Register')}
+                  </span>
                 </button>
               </form>
 
@@ -410,9 +543,15 @@ export const DevoteeAuthModal: React.FC<DevoteeAuthModalProps> = ({
                 {/* Login Button */}
                 <button
                   type="submit"
-                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#F25119] hover:bg-[#d9440f] active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-[#F25119] hover:bg-[#d9440f] active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <span>{language === 'bn' ? 'লগইন' : 'Login'}</span>
+                  {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                  <span>
+                    {isSubmitting
+                      ? (language === 'bn' ? 'লগইন হচ্ছে...' : 'Logging in...')
+                      : (language === 'bn' ? 'লগইন' : 'Login')}
+                  </span>
                 </button>
               </form>
 

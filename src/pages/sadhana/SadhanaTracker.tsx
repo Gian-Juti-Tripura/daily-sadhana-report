@@ -105,7 +105,7 @@ export const SadhanaTracker: React.FC = () => {
 
   const [reportDate, setReportDate] = useState(todayFormatted);
 
-  const effectiveDevoteeName = selectedDevotee === 'Custom (অন্যান্য)' ? (customDevoteeName.trim() || 'Gian Juti Tripura') : selectedDevotee;
+  const effectiveDevoteeName = selectedDevotee === 'Custom (অন্যান্য)' ? (customDevoteeName.trim() || 'Devotee') : selectedDevotee;
   const effectiveCounselorName = selectedCounselor === 'Custom (অন্যান্য)' ? (customCounselorName.trim() || 'HG Raghav Kirtan Das') : selectedCounselor;
 
   // Counselor Portal Remarks State

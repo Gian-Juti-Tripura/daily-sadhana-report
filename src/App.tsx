@@ -12,19 +12,20 @@ import { DevoteeAuthModal } from './components/auth/DevoteeAuthModal';
 import { InstallPromptBanner } from './components/pwa/InstallPromptBanner';
 import { FallingFlowers } from './components/effects/FallingFlowers';
 import { Toaster } from 'react-hot-toast';
-import { getRegisteredCounselees } from './data/counseleesData';
+import { getRegisteredCounselees, DEFAULT_GUEST_DEVOTEE } from './data/counseleesData';
+import { supabase } from './supabase/supabaseClient';
 import type { CounseleeProfile } from './types/sadhana';
 
 const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'DAILY_REPORT' | 'DIGITAL_CARD' | 'COUNSELOR_DESK'>('DAILY_REPORT');
   const { settings, paletteConfig } = useTheme();
 
-  // Active Devotee state
+  // Active Devotee state: defaults to saved devotee if logged in, or DEFAULT_GUEST_DEVOTEE for clean sessions
   const counselees = getRegisteredCounselees();
   const [activeDevotee, setActiveDevotee] = useState<CounseleeProfile>(() => {
-    const savedId = localStorage.getItem('voice_active_devotee_id');
+    const savedId = localStorage.getItem('voice_active_devotee_id') || localStorage.getItem('voice_logged_in_user_id');
     const found = counselees.find(c => c.id === savedId);
-    const initial = found || counselees[0];
+    const initial = found || (localStorage.getItem('voice_logged_in_user_id') ? counselees[0] : DEFAULT_GUEST_DEVOTEE);
     const savedCounselor = localStorage.getItem(`voice_counselor_${initial.id}`) || localStorage.getItem('voice_selected_counselor');
     if (savedCounselor && initial.counselorName !== savedCounselor) {
       return {
@@ -43,6 +44,33 @@ const AppContent: React.FC = () => {
     const dismissedThisSession = sessionStorage.getItem('voice_login_dismissed_session');
     return !isLoggedIn || !dismissedThisSession;
   });
+
+  // Sync Supabase Auth session on mount and changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        const userEmail = session.user.email.toLowerCase();
+        const list = getRegisteredCounselees();
+        const devotee = list.find(d => d.email && d.email.toLowerCase() === userEmail);
+        if (devotee) {
+          handleSelectDevotee(devotee);
+        }
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.email) {
+        const userEmail = session.user.email.toLowerCase();
+        const list = getRegisteredCounselees();
+        const devotee = list.find(d => d.email && d.email.toLowerCase() === userEmail);
+        if (devotee) {
+          handleSelectDevotee(devotee);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleOpenAuth = () => setIsAuthModalOpen(true);

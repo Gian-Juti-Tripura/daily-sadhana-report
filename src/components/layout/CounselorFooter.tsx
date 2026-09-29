@@ -16,7 +16,7 @@ export const COUNSELOR_BN_MAP: Record<string, string> = {
 };
 
 export const CounselorFooter: React.FC<CounselorFooterProps> = ({
-  currentDevoteeName = 'Gian Juti Tripura',
+  currentDevoteeName = 'Devotee',
   counselorName
 }) => {
   const { language } = useLanguage();

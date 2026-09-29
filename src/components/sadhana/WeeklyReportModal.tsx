@@ -39,7 +39,7 @@ export const WeeklyReportModal: React.FC<WeeklyReportModalProps> = ({
   if (!isOpen) return null;
 
   const generateReportMessage = () => {
-    const devoteeCleanName = (devoteeName || 'Gian Juti Tripura').trim().replace(/\.+$/, '');
+    const devoteeCleanName = (devoteeName || 'Devotee').trim().replace(/\.+$/, '');
     const bodyFormatted = typeof formData.bodyPct === 'string' && formData.bodyPct.includes('.')
       ? formData.bodyPct
       : `${parseFloat(formData.bodyPct || '0').toFixed(2)}`;

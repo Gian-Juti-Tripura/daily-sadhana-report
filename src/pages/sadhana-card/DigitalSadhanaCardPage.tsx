@@ -449,7 +449,7 @@ export const DigitalSadhanaCardPage: React.FC<DigitalSadhanaCardPageProps> = ({
   }, [matrixEntries, columnCalculations]);
 
   const generateWeeklyReportText = () => {
-    const devoteeCleanName = (activeDevotee.name || 'Gian Juti Tripura').trim().replace(/\.+$/, '');
+    const devoteeCleanName = (activeDevotee.name || 'Devotee').trim().replace(/\.+$/, '');
     const bodyFormatted = typeof weeklyStats.bodyPct === 'string' && weeklyStats.bodyPct.includes('.')
       ? weeklyStats.bodyPct
       : `${parseFloat(weeklyStats.bodyPct || '0').toFixed(2)}`;

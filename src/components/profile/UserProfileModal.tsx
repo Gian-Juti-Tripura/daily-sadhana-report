@@ -31,7 +31,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
   const fallbackName = user?.user_metadata?.full_name || 
                        user?.email?.split('@')[0] || 
-                       (language === 'bn' ? 'জ্ঞান জ্যোতি ত্রিপুরা' : 'Gian Juti Tripura');
+                       (language === 'bn' ? 'ভক্ত সাধক' : 'Devotee');
 
   const [profile, setProfile] = useState<UserProfileState>(() => getUserProfile(fallbackName));
   const [isEditingName, setIsEditingName] = useState(false);

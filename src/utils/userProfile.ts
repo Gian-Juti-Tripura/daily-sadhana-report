@@ -220,7 +220,7 @@ export const PROFILE_UPDATED_EVENT = 'advaita_user_profile_updated';
 /**
  * Retrieve current user profile from localStorage with fallback
  */
-export const getUserProfile = (fallbackName = 'Gian Juti Tripura'): UserProfileState => {
+export const getUserProfile = (fallbackName = 'Devotee'): UserProfileState => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {

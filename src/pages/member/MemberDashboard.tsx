@@ -27,7 +27,7 @@ const MemberDashboard: React.FC = () => {
 
   const fallbackDevoteeName = user?.user_metadata?.full_name || 
                               user?.email?.split('@')[0] || 
-                              (language === 'bn' ? 'জ্ঞান জ্যোতি ত্রিপুরা' : 'Gian Juti Tripura');
+                              (language === 'bn' ? 'ভক্ত সাধক' : 'Devotee');
 
   const [userProfile, setUserProfile] = useState<UserProfileState>(() => getUserProfile(fallbackDevoteeName));
 
